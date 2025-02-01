@@ -54,9 +54,8 @@ func setupServer(serverAddress string, logger lib.Logger) (*adapter.TCPServer, e
 	challengeVerifier := domain.NewSimpleChallengeVerifier()
 	grantProvider := domain.NewSimpleGrantProvider()
 	powServerFactory := application.NewSimplePoWServerFactory(challengeRandomizer, challengeVerifier, grantProvider, logger)
-	tcpServerConnectionHandler := adapter.NewPoWServerAdapter(powServerFactory)
 
-	tcpServer := adapter.NewTCPServer(serverAddress, tcpServerConnectionHandler, logger)
+	tcpServer := adapter.NewTCPServer(serverAddress, powServerFactory, logger)
 	if err := tcpServer.Listen(); err != nil {
 		return nil, fmt.Errorf("failed to listen tcp server: %w", err)
 	}
