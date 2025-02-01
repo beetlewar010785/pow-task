@@ -24,7 +24,7 @@ func main() {
 	}
 	defer func() { _ = conn.Close() }()
 
-	grant, err := granReceiver.Receive()
+	grant, err := granReceiver.Solve()
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to receive grat message: %s", err))
 		os.Exit(1)

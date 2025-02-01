@@ -4,6 +4,6 @@ import (
 	"github.com/beetlewar010785/pow-task/internal/domain"
 )
 
-type GrantReceiver interface {
-	Receive() (domain.Grant, error)
+type Solver interface {
+	Solve() (domain.Grant, error)
 }

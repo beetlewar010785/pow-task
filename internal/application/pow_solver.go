@@ -5,22 +5,22 @@ import (
 	"github.com/beetlewar010785/pow-task/internal/domain"
 )
 
-type POWGrantReceiver struct {
+type POWSolver struct {
 	nonceFinder domain.NonceFinder
 	readWriter  domain.ReadWriter
 }
 
-func NewPOWGrantReceiver(
+func NewPOWSolver(
 	nonceFinder domain.NonceFinder,
 	readWriter domain.ReadWriter,
-) *POWGrantReceiver {
-	return &POWGrantReceiver{
+) *POWSolver {
+	return &POWSolver{
 		nonceFinder,
 		readWriter,
 	}
 }
 
-func (r *POWGrantReceiver) Receive() (domain.Grant, error) {
+func (r *POWSolver) Solve() (domain.Grant, error) {
 	powRequest, err := r.readWriter.ReadPowRequest()
 	if err != nil {
 		return domain.Grant{}, fmt.Errorf("error reading pow request: %w", err)

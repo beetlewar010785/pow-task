@@ -26,7 +26,7 @@ func NewPOWChallengerFactory(
 	}
 }
 
-func (r *POWChallengerFactory) Create(readWriter domain.ReadWriter) Challenger {
+func (r *POWChallengerFactory) Create(readWriter domain.ReadWriter) Verifier {
 	return NewPOWChallenger(
 		r.challengeRandomizer,
 		r.challengeVerifier,
@@ -60,7 +60,7 @@ func NewPOWChallenger(
 	}
 }
 
-func (r *POWChallenger) Challenge() error {
+func (r *POWChallenger) Verify() error {
 	challenge := r.challengeRandomizer.Generate()
 
 	powRequest := domain.NewPOWRequest(challenge, r.challengeDifficulty)
