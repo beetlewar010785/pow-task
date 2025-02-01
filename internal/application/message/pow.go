@@ -24,6 +24,10 @@ func NewPOWResponse(challenge domain.Challenge, nonce domain.Nonce) POW {
 	return NewPOW(challenge, &nonce)
 }
 
+func (r POW) WithNonce(nonce domain.Nonce) POW {
+	return NewPOWResponse(r.Challenge, nonce)
+}
+
 type POWWriter interface {
 	Write(pow POW) error
 }

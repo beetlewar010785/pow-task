@@ -7,6 +7,7 @@ const (
 	GrantResultFailure
 )
 
+// TODO: move json attributes to adapter
 type Grant struct {
 	Result GrantResult `json:"result"`
 	Quote  *string     `json:"quote,omitempty"`

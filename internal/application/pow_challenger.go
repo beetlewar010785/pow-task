@@ -98,17 +98,17 @@ func (r *POWChallenger) Challenge() error {
 		return fmt.Errorf("error writing pow request: %w", err)
 	}
 
-	powResponse, err := r.powReader.Read()
+	pow, err := r.powReader.Read()
 	if err != nil {
 		return fmt.Errorf("error reading pow response: %w", err)
 	}
 
-	if powResponse.Nonce == nil {
+	if pow.Nonce == nil {
 		return fmt.Errorf("nonce is missing")
 	}
 
 	var grant message.Grant
-	if !r.challengeVerifier.Verify(challenge, *powResponse.Nonce, r.challengeDifficulty) {
+	if !r.challengeVerifier.Verify(challenge, *pow.Nonce, r.challengeDifficulty) {
 		grant = message.FailureGrant()
 	} else {
 		quote := r.grantProvider.Provide()

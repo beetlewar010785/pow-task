@@ -2,49 +2,51 @@ package application
 
 import (
 	"fmt"
+	"github.com/beetlewar010785/pow-task/internal/application/message"
 	"github.com/beetlewar010785/pow-task/internal/domain"
 )
 
 type POWGrantReceiver struct {
-	in          chan []byte
-	out         chan []byte
 	nonceFinder domain.NonceFinder
 	difficulty  domain.Difficulty
-	logger      domain.Logger
+	powWriter   message.POWWriter
+	powReader   message.POWReader
+	grantReader message.GrantReader
 }
 
 func NewPOWGrantReceiver(
-	in chan []byte,
-	out chan []byte,
 	nonceFinder domain.NonceFinder,
 	difficulty domain.Difficulty,
-	logger domain.Logger,
+	powWriter message.POWWriter,
+	powReader message.POWReader,
+	grantReader message.GrantReader,
 ) *POWGrantReceiver {
 	return &POWGrantReceiver{
-		in,
-		out,
 		nonceFinder,
 		difficulty,
-		logger,
+		powWriter,
+		powReader,
+		grantReader,
 	}
 }
 
-func (r *POWGrantReceiver) Receive() domain.Grant {
-	r.logger.Debug("start handling pow client")
+func (r *POWGrantReceiver) Receive() (message.Grant, error) {
+	pow, err := r.powReader.Read()
+	if err != nil {
+		return message.Grant{}, fmt.Errorf("failed to read pow: %w", err)
+	}
 
-	challenge := domain.ChallengeFromBytes(<-r.in)
+	nonce := r.nonceFinder.Find(pow.Challenge, r.difficulty)
+	powWithNonce := pow.WithNonce(nonce)
 
-	r.logger.Debug(fmt.Sprintf("received challenge: %s", challenge))
+	if err := r.powWriter.Write(powWithNonce); err != nil {
+		return message.Grant{}, fmt.Errorf("failed to write pow: %w", err)
+	}
 
-	nonce := r.nonceFinder.Find(challenge, r.difficulty)
+	grant, err := r.grantReader.Read()
+	if err != nil {
+		return message.Grant{}, fmt.Errorf("failed to read grant: %w", err)
+	}
 
-	r.logger.Debug(fmt.Sprintf("found nonce: %s", nonce))
-
-	r.out <- nonce.Bytes()
-
-	grant := domain.Grant(<-r.in)
-
-	r.logger.Debug(fmt.Sprintf("received grant: %s", grant))
-
-	return grant
+	return grant, nil
 }

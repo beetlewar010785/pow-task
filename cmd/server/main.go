@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/beetlewar010785/pow-task/internal/adapter"
-	"github.com/beetlewar010785/pow-task/internal/application"
 	"github.com/beetlewar010785/pow-task/internal/domain"
 	"os"
 	"os/signal"
@@ -27,17 +26,18 @@ func main() {
 	logger := adapter.NewStdLogger("server", adapter.LogLevelInfo)
 	logger.Info(fmt.Sprintf("starting TCP Server at %s", serverAddress))
 
-	ctx, stop := createSignalContext()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	tcpServer, err := setupServer(
+	tcpServer := adapter.StartTCPServer(
 		serverAddress,
+		domain.NewRandomPhraseGrantProvider(wordOfWisdomQuotes),
 		challengeDifficulty,
 		challengeLength,
-		wordOfWisdomQuotes,
 		logger,
 	)
-	if err != nil {
+
+	if err := tcpServer.Listen(); err != nil {
 		logger.Error(fmt.Sprintf("failed to setup tcp server: %s", err.Error()))
 		os.Exit(1)
 	}
@@ -57,35 +57,4 @@ func main() {
 
 	wg.Wait()
 	logger.Info("server stopped")
-}
-
-func createSignalContext() (context.Context, context.CancelFunc) {
-	return signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-}
-
-func setupServer(
-	serverAddress string,
-	challengeDifficulty domain.Difficulty,
-	challengeLength int,
-	wordOfWisdomQuotes []domain.Grant,
-	logger domain.Logger,
-) (*adapter.TCPServer, error) {
-	challengeRandomizer := domain.NewSimpleChallengeRandomizer()
-	challengeVerifier := domain.NewSimpleChallengeVerifier()
-	grantProvider := domain.NewRandomPhraseGrantProvider(wordOfWisdomQuotes)
-	powServerFactory := application.NewPOWChallengeHandlerFactory(
-		challengeRandomizer,
-		challengeVerifier,
-		grantProvider,
-		challengeDifficulty,
-		challengeLength,
-		logger,
-	)
-
-	tcpServer := adapter.NewTCPServer(serverAddress, powServerFactory, logger)
-	if err := tcpServer.Listen(); err != nil {
-		return nil, fmt.Errorf("failed to listen tcp server: %w", err)
-	}
-
-	return tcpServer, nil
 }

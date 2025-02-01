@@ -2,6 +2,8 @@ package test
 
 import (
 	"context"
+	"github.com/beetlewar010785/pow-task/internal/application/message"
+	"net"
 	"testing"
 	"time"
 
@@ -13,19 +15,28 @@ import (
 )
 
 func TestIntegration(t *testing.T) {
-	t.Run("should pass PoW challenge", func(t *testing.T) {
-		const randomPort = ":0"
-		const challengeDifficulty = 4
-		const challengeLength = 16
-		logLevel := adapter.LogLevelDebug
+	type testSuite struct {
+		grantProviderMock *grantProviderMock
+		server            *adapter.TCPServer
+		client            net.Conn
+		grantReceiver     application.GrantReceiver
+		ctx               context.Context
+	}
 
-		grantProvider := &grantProviderMock{grant: "expected-grant"}
-		tcpServer := createTCPServer(
+	setup := func(
+		t *testing.T,
+		challengeDifficulty domain.Difficulty,
+		challengeLength int,
+	) testSuite {
+		const randomPort = ":0"
+
+		grantProvider := new(grantProviderMock)
+		tcpServer := adapter.StartTCPServer(
 			randomPort,
 			grantProvider,
 			challengeDifficulty,
 			challengeLength,
-			adapter.NewStdLogger("server", logLevel),
+			adapter.NewStdLogger("server", adapter.LogLevelInfo),
 		)
 
 		require.NoError(t, tcpServer.Listen())
@@ -40,21 +51,36 @@ func TestIntegration(t *testing.T) {
 
 		WaitForServer(t, tcpServer)
 
-		serverAddress := tcpServer.Address()
-		powClient, tcpClient, err := createClient(
-			serverAddress,
-			challengeDifficulty,
-			adapter.NewStdLogger("client", logLevel),
-		)
+		conn, grantReceiver, err := adapter.CreateTCPClient(tcpServer.Address(), challengeDifficulty)
 		require.NoError(t, err)
 
-		go func() {
-			err := tcpClient.Run(ctx)
-			assert.NoError(t, err, "server.Run() returned an unexpected error")
-		}()
+		return testSuite{
+			grantProvider,
+			tcpServer,
+			conn,
+			grantReceiver,
+			ctx,
+		}
+	}
 
-		actualGrant := powClient.Receive()
-		assert.Equal(t, grantProvider.grant, actualGrant)
+	tearDown := func(suite testSuite) {
+		suite.ctx.Done()
+		_ = suite.client.Close()
+	}
+
+	t.Run("should pass PoW challenge", func(t *testing.T) {
+		const challengeDifficulty = 4
+		const challengeLength = 16
+
+		suite := setup(t, challengeDifficulty, challengeLength)
+		defer tearDown(suite)
+
+		suite.grantProviderMock.grant = "expected-grant"
+		actualGrant, err := suite.grantReceiver.Receive()
+		require.NoError(t, err)
+
+		expectedGrant := message.SuccessGrant(string(suite.grantProviderMock.grant))
+		assert.Equal(t, expectedGrant, actualGrant)
 	})
 }
 
@@ -73,53 +99,6 @@ func WaitForServer(t *testing.T, server *adapter.TCPServer) {
 			}
 		}
 	}
-}
-
-func createTCPServer(
-	serverAddress string,
-	grantProvider domain.GrantProvider,
-	challengeDifficulty domain.Difficulty,
-	challengeLength int,
-	logger domain.Logger,
-) *adapter.TCPServer {
-	challengeRandomizer := domain.NewSimpleChallengeRandomizer()
-	challengeVerifier := domain.NewSimpleChallengeVerifier()
-	challengerFactory := application.NewPOWChallengerFactory(
-		challengeRandomizer,
-		challengeVerifier,
-		grantProvider,
-		challengeDifficulty,
-		challengeLength,
-	)
-	return adapter.NewTCPServer(
-		serverAddress,
-		challengerFactory,
-		logger,
-	)
-}
-
-func createClient(
-	serverAddress string,
-	difficulty domain.Difficulty,
-	logger domain.Logger,
-) (*application.POWGrantReceiver, *adapter.TCPClient, error) {
-	in := make(chan []byte)
-	out := make(chan []byte)
-
-	tcpClient := adapter.NewTCPClient(
-		serverAddress,
-		in,
-		out,
-		logger,
-	)
-
-	return application.NewPOWGrantReceiver(
-		in,
-		out,
-		domain.NewIncrementalNonceFinder(),
-		difficulty,
-		logger,
-	), tcpClient, nil
 }
 
 type grantProviderMock struct {

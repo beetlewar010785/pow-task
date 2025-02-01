@@ -17,15 +17,26 @@ type TCPServer struct {
 	challengerFactory application.ChallengerFactory
 }
 
-func NewTCPServer(
-	address string,
-	challengerFactory application.ChallengerFactory,
+func StartTCPServer(
+	serverAddress string,
+	grantProvider domain.GrantProvider,
+	challengeDifficulty domain.Difficulty,
+	challengeLength int,
 	logger domain.Logger,
 ) *TCPServer {
+	challengeRandomizer := domain.NewSimpleChallengeRandomizer()
+	challengeVerifier := domain.NewSimpleChallengeVerifier()
+	challengerFactory := application.NewPOWChallengerFactory(
+		challengeRandomizer,
+		challengeVerifier,
+		grantProvider,
+		challengeDifficulty,
+		challengeLength,
+	)
 	return &TCPServer{
 		logger:            logger,
 		challengerFactory: challengerFactory,
-		address:           address,
+		address:           serverAddress,
 	}
 }
 
