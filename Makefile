@@ -25,6 +25,4 @@ run-client: network
 
 clean:
 	@go clean -testcache
-	@if [ -n "$$(docker ps -aq --filter ancestor=$(SERVER_IMAGE))" ]; then docker rm -f $$(docker ps -aq --filter ancestor=$(SERVER_IMAGE)); fi
-	@if [ -n "$$(docker ps -aq --filter ancestor=$(CLIENT_IMAGE))" ]; then docker rm -f $$(docker ps -aq --filter ancestor=$(CLIENT_IMAGE)); fi
 	docker network rm $(NETWORK) || true

@@ -6,7 +6,7 @@ import (
 )
 
 const ServerPort = "8080"
-const LogLevel = adapter.LogLevelInfo
+const LogLevel = adapter.LogLevelDebug
 const ChallengeDifficulty = 4
 const ChallengeLength = 16
 

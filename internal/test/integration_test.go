@@ -19,7 +19,7 @@ func TestIntegration(t *testing.T) {
 		grantProviderMock *grantProviderMock
 		server            *adapter.TCPServer
 		client            net.Conn
-		grantReceiver     application.GrantReceiver
+		solver            application.Solver
 		ctx               context.Context
 	}
 
@@ -51,14 +51,14 @@ func TestIntegration(t *testing.T) {
 
 		WaitForServer(t, tcpServer)
 
-		conn, grantReceiver, err := adapter.CreateTCPClient(tcpServer.Address())
+		conn, solver, err := adapter.CreateTCPClient(tcpServer.Address())
 		require.NoError(t, err)
 
 		return testSuite{
 			grantProvider,
 			tcpServer,
 			conn,
-			grantReceiver,
+			solver,
 			ctx,
 		}
 	}
@@ -73,7 +73,7 @@ func TestIntegration(t *testing.T) {
 		defer tearDown(suite)
 
 		suite.grantProviderMock.grant = "expected-grant"
-		actualGrant, err := suite.grantReceiver.Receive()
+		actualGrant, err := suite.solver.Solve()
 		require.NoError(t, err)
 
 		expectedGrant := domain.SuccessGrant(string(suite.grantProviderMock.grant))

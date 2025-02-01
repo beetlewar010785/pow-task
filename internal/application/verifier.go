@@ -4,10 +4,10 @@ import (
 	"github.com/beetlewar010785/pow-task/internal/domain"
 )
 
-type ChallengerFactory interface {
-	Create(readWriter domain.ReadWriter) Challenger
+type VerifierFactory interface {
+	Create(readWriter domain.ReadWriter) Verifier
 }
 
-type Challenger interface {
-	Challenge() error
+type Verifier interface {
+	Verify() error
 }

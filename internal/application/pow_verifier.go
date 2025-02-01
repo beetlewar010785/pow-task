@@ -5,20 +5,20 @@ import (
 	"github.com/beetlewar010785/pow-task/internal/domain"
 )
 
-type POWChallengerFactory struct {
+type POWVerifierFactory struct {
 	challengeRandomizer domain.ChallengeRandomizer
 	challengeVerifier   domain.ChallengeVerifier
 	grantProvider       domain.QuoteProvider
 	challengeDifficulty domain.Difficulty
 }
 
-func NewPOWChallengerFactory(
+func NewPOWVerifierFactory(
 	challengeRandomizer domain.ChallengeRandomizer,
 	challengeVerifier domain.ChallengeVerifier,
 	grantProvider domain.QuoteProvider,
 	challengeDifficulty domain.Difficulty,
-) *POWChallengerFactory {
-	return &POWChallengerFactory{
+) *POWVerifierFactory {
+	return &POWVerifierFactory{
 		challengeRandomizer,
 		challengeVerifier,
 		grantProvider,
@@ -26,8 +26,8 @@ func NewPOWChallengerFactory(
 	}
 }
 
-func (r *POWChallengerFactory) Create(readWriter domain.ReadWriter) Verifier {
-	return NewPOWChallenger(
+func (r *POWVerifierFactory) Create(readWriter domain.ReadWriter) Verifier {
+	return NewPOWVerifier(
 		r.challengeRandomizer,
 		r.challengeVerifier,
 		r.grantProvider,
@@ -36,7 +36,7 @@ func (r *POWChallengerFactory) Create(readWriter domain.ReadWriter) Verifier {
 	)
 }
 
-type POWChallenger struct {
+type POWVerifier struct {
 	challengeRandomizer domain.ChallengeRandomizer
 	challengeVerifier   domain.ChallengeVerifier
 	grantProvider       domain.QuoteProvider
@@ -44,14 +44,14 @@ type POWChallenger struct {
 	readWriter          domain.ReadWriter
 }
 
-func NewPOWChallenger(
+func NewPOWVerifier(
 	challengeRandomizer domain.ChallengeRandomizer,
 	challengeVerifier domain.ChallengeVerifier,
 	grantProvider domain.QuoteProvider,
 	challengeDifficulty domain.Difficulty,
 	readWriter domain.ReadWriter,
-) *POWChallenger {
-	return &POWChallenger{
+) *POWVerifier {
+	return &POWVerifier{
 		challengeRandomizer,
 		challengeVerifier,
 		grantProvider,
@@ -60,7 +60,7 @@ func NewPOWChallenger(
 	}
 }
 
-func (r *POWChallenger) Verify() error {
+func (r *POWVerifier) Verify() error {
 	challenge := r.challengeRandomizer.Generate()
 
 	powRequest := domain.NewPOWRequest(challenge, r.challengeDifficulty)

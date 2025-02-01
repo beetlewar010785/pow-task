@@ -10,11 +10,11 @@ import (
 )
 
 type TCPServer struct {
-	address           string
-	logger            domain.Logger
-	listener          net.Listener
-	connections       sync.Map
-	challengerFactory application.ChallengerFactory
+	address         string
+	logger          domain.Logger
+	listener        net.Listener
+	connections     sync.Map
+	verifierFactory application.VerifierFactory
 }
 
 func StartTCPServer(
@@ -26,16 +26,16 @@ func StartTCPServer(
 ) *TCPServer {
 	challengeRandomizer := domain.NewSimpleChallengeRandomizer(challengeLength)
 	challengeVerifier := domain.NewSimpleChallengeVerifier()
-	challengerFactory := application.NewPOWChallengerFactory(
+	verifierFactory := application.NewPOWVerifierFactory(
 		challengeRandomizer,
 		challengeVerifier,
 		grantProvider,
 		challengeDifficulty,
 	)
 	return &TCPServer{
-		logger:            logger,
-		challengerFactory: challengerFactory,
-		address:           serverAddress,
+		logger:          logger,
+		verifierFactory: verifierFactory,
+		address:         serverAddress,
 	}
 }
 
@@ -94,8 +94,8 @@ func (r *TCPServer) performChallenge(conn net.Conn) {
 	defer r.closeConnection(conn)
 
 	readWriter := NewStringReadWriter(conn)
-	challenger := r.challengerFactory.Create(readWriter)
-	if err := challenger.Challenge(); err != nil {
+	verifier := r.verifierFactory.Create(readWriter)
+	if err := verifier.Verify(); err != nil {
 		r.logger.Warn(fmt.Sprintf("challenge for %s failed: %v", conn.RemoteAddr(), err))
 	} else {
 		r.logger.Debug(fmt.Sprintf("challenge for %s succeeded", conn.RemoteAddr()))

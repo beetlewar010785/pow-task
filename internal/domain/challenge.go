@@ -11,11 +11,18 @@ import (
 
 type Challenge string
 type Nonce int
-
 type Difficulty int
 
 type ChallengeRandomizer interface {
 	Generate() Challenge
+}
+
+type ChallengeVerifier interface {
+	Verify(challenge Challenge, nonce Nonce, difficulty Difficulty) bool
+}
+
+type NonceFinder interface {
+	Find(challenge Challenge, difficulty Difficulty) Nonce
 }
 
 type SimpleChallengeRandomizer struct {
@@ -39,10 +46,6 @@ func (r *SimpleChallengeRandomizer) Generate() Challenge {
 	return Challenge(b)
 }
 
-type ChallengeVerifier interface {
-	Verify(challenge Challenge, nonce Nonce, difficulty Difficulty) bool
-}
-
 type SimpleChallengeVerifier struct {
 }
 
@@ -60,10 +63,6 @@ func (r *SimpleChallengeVerifier) Verify(
 	hashHex := hex.EncodeToString(hash[:])
 
 	return strings.HasPrefix(hashHex, strings.Repeat("0", int(difficulty)))
-}
-
-type NonceFinder interface {
-	Find(challenge Challenge, difficulty Difficulty) Nonce
 }
 
 type IncrementalNonceFinder struct {

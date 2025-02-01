@@ -9,7 +9,7 @@ import (
 
 func CreateTCPClient(
 	serverAddress string,
-) (net.Conn, application.GrantReceiver, error) {
+) (net.Conn, application.Solver, error) {
 	client, err := net.Dial("tcp", serverAddress)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to dial tcp: %w", err)
@@ -17,10 +17,10 @@ func CreateTCPClient(
 
 	readWriter := NewStringReadWriter(client)
 	challengeVerifier := domain.NewSimpleChallengeVerifier()
-	grantReceiver := application.NewPOWGrantReceiver(
+	solver := application.NewPOWSolver(
 		domain.NewIncrementalNonceFinder(challengeVerifier),
 		readWriter,
 	)
 
-	return client, grantReceiver, nil
+	return client, solver, nil
 }
