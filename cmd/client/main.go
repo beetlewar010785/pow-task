@@ -6,7 +6,6 @@ import (
 	"github.com/beetlewar010785/pow-task/internal/adapter"
 	"github.com/beetlewar010785/pow-task/internal/application"
 	"github.com/beetlewar010785/pow-task/internal/domain"
-	"github.com/beetlewar010785/pow-task/pkg/lib"
 	"os"
 	"os/signal"
 	"syscall"
@@ -21,7 +20,7 @@ func main() {
 		serverAddress = localServerAddress
 	}
 
-	logger := lib.NewStdLogger("client", lib.LogLevelInfo)
+	logger := adapter.NewStdLogger("client", adapter.LogLevelInfo)
 	logger.Info(fmt.Sprintf("connecting to %s", serverAddress))
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

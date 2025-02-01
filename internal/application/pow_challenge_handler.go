@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/beetlewar010785/pow-task/internal/domain"
-	"github.com/beetlewar010785/pow-task/pkg/lib"
 )
 
 type POWChallengeHandlerFactory interface {
@@ -17,7 +16,7 @@ type SimplePOWChallengeHandlerFactory struct {
 	grantProvider       domain.GrantProvider
 	challengeDifficulty domain.Difficulty
 	challengeLength     int
-	logger              lib.Logger
+	logger              domain.Logger
 }
 
 func NewPOWChallengeHandlerFactory(
@@ -26,7 +25,7 @@ func NewPOWChallengeHandlerFactory(
 	grantProvider domain.GrantProvider,
 	challengeDifficulty domain.Difficulty,
 	challengeLength int,
-	logger lib.Logger,
+	logger domain.Logger,
 ) *SimplePOWChallengeHandlerFactory {
 	return &SimplePOWChallengeHandlerFactory{
 		challengeRandomizer,
@@ -62,7 +61,7 @@ type POWChallengeHandler struct {
 	granProvider        domain.GrantProvider
 	challengeDifficulty domain.Difficulty
 	challengeLength     int
-	logger              lib.Logger
+	logger              domain.Logger
 }
 
 func NewPOWChallengeHandler(
@@ -73,7 +72,7 @@ func NewPOWChallengeHandler(
 	granProvider domain.GrantProvider,
 	challengeDifficulty domain.Difficulty,
 	challengeLength int,
-	logger lib.Logger,
+	logger domain.Logger,
 ) *POWChallengeHandler {
 	return &POWChallengeHandler{
 		in,

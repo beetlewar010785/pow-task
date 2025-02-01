@@ -6,7 +6,6 @@ import (
 	"github.com/beetlewar010785/pow-task/internal/adapter"
 	"github.com/beetlewar010785/pow-task/internal/application"
 	"github.com/beetlewar010785/pow-task/internal/domain"
-	"github.com/beetlewar010785/pow-task/pkg/lib"
 	"os"
 	"os/signal"
 	"sync"
@@ -25,7 +24,7 @@ func main() {
 		"If you don’t stand for something, you will fall for anything.",
 	}
 
-	logger := lib.NewStdLogger("server", lib.LogLevelInfo)
+	logger := adapter.NewStdLogger("server", adapter.LogLevelInfo)
 	logger.Info(fmt.Sprintf("starting TCP Server at %s", serverAddress))
 
 	ctx, stop := createSignalContext()
@@ -69,7 +68,7 @@ func setupServer(
 	challengeDifficulty domain.Difficulty,
 	challengeLength int,
 	wordOfWisdomQuotes []domain.Grant,
-	logger lib.Logger,
+	logger domain.Logger,
 ) (*adapter.TCPServer, error) {
 	challengeRandomizer := domain.NewSimpleChallengeRandomizer()
 	challengeVerifier := domain.NewSimpleChallengeVerifier()

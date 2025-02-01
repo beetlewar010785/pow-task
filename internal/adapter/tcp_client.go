@@ -3,7 +3,7 @@ package adapter
 import (
 	"context"
 	"fmt"
-	"github.com/beetlewar010785/pow-task/pkg/lib"
+	"github.com/beetlewar010785/pow-task/internal/domain"
 	"net"
 )
 
@@ -11,14 +11,14 @@ type TCPClient struct {
 	serverAddress string
 	in            chan []byte
 	out           chan []byte
-	logger        lib.Logger
+	logger        domain.Logger
 }
 
 func NewTCPClient(
 	serverAddress string,
 	in chan []byte,
 	out chan []byte,
-	logger lib.Logger,
+	logger domain.Logger,
 ) *TCPClient {
 	return &TCPClient{
 		serverAddress,

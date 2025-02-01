@@ -8,7 +8,6 @@ import (
 	"github.com/beetlewar010785/pow-task/internal/adapter"
 	"github.com/beetlewar010785/pow-task/internal/application"
 	"github.com/beetlewar010785/pow-task/internal/domain"
-	"github.com/beetlewar010785/pow-task/pkg/lib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,7 +17,7 @@ func TestIntegration(t *testing.T) {
 		const randomPort = ":0"
 		const challengeDifficulty = 4
 		const challengeLength = 16
-		logLevel := lib.LogLevelDebug
+		logLevel := adapter.LogLevelDebug
 
 		grantProvider := &grantProviderMock{grant: "expected-grant"}
 		tcpServer := createTCPServer(
@@ -26,7 +25,7 @@ func TestIntegration(t *testing.T) {
 			grantProvider,
 			challengeDifficulty,
 			challengeLength,
-			lib.NewStdLogger("server", logLevel),
+			adapter.NewStdLogger("server", logLevel),
 		)
 
 		require.NoError(t, tcpServer.Listen())
@@ -45,7 +44,7 @@ func TestIntegration(t *testing.T) {
 		powClient, tcpClient, err := createClient(
 			serverAddress,
 			challengeDifficulty,
-			lib.NewStdLogger("client", logLevel),
+			adapter.NewStdLogger("client", logLevel),
 		)
 		require.NoError(t, err)
 
@@ -81,7 +80,7 @@ func createTCPServer(
 	grantProvider domain.GrantProvider,
 	challengeDifficulty domain.Difficulty,
 	challengeLength int,
-	logger lib.Logger,
+	logger domain.Logger,
 ) *adapter.TCPServer {
 	challengeRandomizer := domain.NewSimpleChallengeRandomizer()
 	challengeVerifier := domain.NewSimpleChallengeVerifier()
@@ -99,7 +98,7 @@ func createTCPServer(
 func createClient(
 	serverAddress string,
 	difficulty domain.Difficulty,
-	logger lib.Logger,
+	logger domain.Logger,
 ) (*application.POWGrantReceiver, *adapter.TCPClient, error) {
 	in := make(chan []byte)
 	out := make(chan []byte)

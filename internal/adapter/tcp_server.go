@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/beetlewar010785/pow-task/internal/application"
-	"github.com/beetlewar010785/pow-task/pkg/lib"
+	"github.com/beetlewar010785/pow-task/internal/domain"
 	"net"
 	"sync"
 )
 
 type TCPServer struct {
 	address          string
-	logger           lib.Logger
+	logger           domain.Logger
 	listener         net.Listener
 	connections      sync.Map
 	powServerFactory application.POWChallengeHandlerFactory
@@ -20,7 +20,7 @@ type TCPServer struct {
 func NewTCPServer(
 	address string,
 	powServerFactory application.POWChallengeHandlerFactory,
-	logger lib.Logger,
+	logger domain.Logger,
 ) *TCPServer {
 	return &TCPServer{
 		logger:           logger,

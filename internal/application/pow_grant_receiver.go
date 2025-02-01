@@ -3,7 +3,6 @@ package application
 import (
 	"fmt"
 	"github.com/beetlewar010785/pow-task/internal/domain"
-	"github.com/beetlewar010785/pow-task/pkg/lib"
 )
 
 type POWGrantReceiver struct {
@@ -11,7 +10,7 @@ type POWGrantReceiver struct {
 	out         chan []byte
 	nonceFinder domain.NonceFinder
 	difficulty  domain.Difficulty
-	logger      lib.Logger
+	logger      domain.Logger
 }
 
 func NewPOWGrantReceiver(
@@ -19,7 +18,7 @@ func NewPOWGrantReceiver(
 	out chan []byte,
 	nonceFinder domain.NonceFinder,
 	difficulty domain.Difficulty,
-	logger lib.Logger,
+	logger domain.Logger,
 ) *POWGrantReceiver {
 	return &POWGrantReceiver{
 		in,
