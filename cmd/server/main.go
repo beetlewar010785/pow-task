@@ -53,7 +53,7 @@ func setupServer(serverAddress string, logger lib.Logger) (*adapter.TCPServer, e
 	challengeRandomizer := domain.NewSimpleChallengeRandomizer()
 	challengeVerifier := domain.NewSimpleChallengeVerifier()
 	grantProvider := domain.NewSimpleGrantProvider()
-	powServerFactory := application.NewSimplePoWServerFactory(challengeRandomizer, challengeVerifier, grantProvider, logger)
+	powServerFactory := application.NewPOWChallengeHandlerFactory(challengeRandomizer, challengeVerifier, grantProvider, logger)
 
 	tcpServer := adapter.NewTCPServer(serverAddress, powServerFactory, logger)
 	if err := tcpServer.Listen(); err != nil {

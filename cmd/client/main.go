@@ -1,43 +1,50 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/beetlewar010785/pow-task/internal/adapter"
 	"github.com/beetlewar010785/pow-task/internal/application"
 	"github.com/beetlewar010785/pow-task/internal/domain"
 	"github.com/beetlewar010785/pow-task/pkg/lib"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
-	logger := lib.NewStdLogger("client")
-
 	const serverAddress = "localhost:8080"
 	const difficulty = 4
 
-	incomingChannel := make(chan []byte)
-	outgoingChannel := make(chan []byte)
+	logger := lib.NewStdLogger("client", lib.LogLevelInfo)
+	logger.Info(fmt.Sprintf("connecting to %s", serverAddress))
 
-	connection, err := adapter.CreateAndRunTCPConnection(serverAddress, incomingChannel, outgoingChannel, logger)
-	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
-	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
-	defer func(connection *adapter.TCPConnection) {
-		_ = connection.Close()
-	}(connection)
+	in := make(chan []byte)
+	out := make(chan []byte)
+
+	tcpClient := adapter.NewTCPClient(serverAddress, in, out, logger)
+	go func() {
+		if err := tcpClient.Run(ctx); err != nil {
+			logger.Error(fmt.Sprintf("tcp client run error: %v", err))
+			os.Exit(1)
+		}
+	}()
 
 	nonceFinder := domain.NewIncrementalNonceFinder()
+	powClient := application.NewPOWGrantReceiver(in, out, nonceFinder, difficulty, logger)
 
-	powClient := application.NewPoWClient(
-		incomingChannel,
-		outgoingChannel,
-		nonceFinder,
-		difficulty,
-		logger,
-	)
+	resultChan := make(chan domain.Grant)
+	go func() {
+		resultChan <- powClient.Receive()
+	}()
 
-	grant := powClient.Handle()
-	logger.Info(fmt.Sprintf("received grant: %s", grant))
+	select {
+	case <-ctx.Done():
+		logger.Warn("client shutting down due to interrupt signal")
+	case grant := <-resultChan:
+		logger.Info(fmt.Sprintf("received grant: %s", grant))
+	}
 }
