@@ -45,23 +45,22 @@ func (r *TCPConnection) RunReader() error {
 }
 
 func (r *TCPConnection) RunWriter() error {
-	for {
-		select {
-		case bytes := <-r.out:
-			bytes = append(bytes, "\n"...)
-			num, err := r.conn.Write(bytes)
+	for bytes := range r.out {
+		bytes = append(bytes, "\n"...)
+		num, err := r.conn.Write(bytes)
 
-			if errors.Is(err, net.ErrClosed) {
-				return nil
-			}
-
-			if err != nil {
-				return fmt.Errorf("failed to write bytes: %w", err)
-			}
-
-			r.logger.Trace(fmt.Sprintf("written bytes: %d", num))
+		if errors.Is(err, net.ErrClosed) {
+			return nil
 		}
+
+		if err != nil {
+			return fmt.Errorf("failed to write bytes: %w", err)
+		}
+
+		r.logger.Trace(fmt.Sprintf("written bytes: %d", num))
 	}
+
+	return nil
 }
 
 func (r *TCPConnection) Close() error {

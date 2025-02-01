@@ -15,6 +15,8 @@ type SimplePOWChallengeHandlerFactory struct {
 	challengeRandomizer domain.ChallengeRandomizer
 	challengeVerifier   domain.ChallengeVerifier
 	grantProvider       domain.GrantProvider
+	challengeDifficulty domain.Difficulty
+	challengeLength     int
 	logger              lib.Logger
 }
 
@@ -22,12 +24,16 @@ func NewPOWChallengeHandlerFactory(
 	challengeRandomizer domain.ChallengeRandomizer,
 	challengeVerifier domain.ChallengeVerifier,
 	grantProvider domain.GrantProvider,
+	challengeDifficulty domain.Difficulty,
+	challengeLength int,
 	logger lib.Logger,
 ) *SimplePOWChallengeHandlerFactory {
 	return &SimplePOWChallengeHandlerFactory{
 		challengeRandomizer,
 		challengeVerifier,
 		grantProvider,
+		challengeDifficulty,
+		challengeLength,
 		logger,
 	}
 }
@@ -42,6 +48,8 @@ func (r *SimplePOWChallengeHandlerFactory) Create(
 		r.challengeRandomizer,
 		r.challengeVerifier,
 		r.grantProvider,
+		r.challengeDifficulty,
+		r.challengeLength,
 		r.logger,
 	)
 }
@@ -52,6 +60,8 @@ type POWChallengeHandler struct {
 	challengeRandomizer domain.ChallengeRandomizer
 	challengeVerifier   domain.ChallengeVerifier
 	granProvider        domain.GrantProvider
+	challengeDifficulty domain.Difficulty
+	challengeLength     int
 	logger              lib.Logger
 }
 
@@ -61,6 +71,8 @@ func NewPOWChallengeHandler(
 	challengeRandomizer domain.ChallengeRandomizer,
 	challengeVerifier domain.ChallengeVerifier,
 	granProvider domain.GrantProvider,
+	challengeDifficulty domain.Difficulty,
+	challengeLength int,
 	logger lib.Logger,
 ) *POWChallengeHandler {
 	return &POWChallengeHandler{
@@ -69,6 +81,8 @@ func NewPOWChallengeHandler(
 		challengeRandomizer,
 		challengeVerifier,
 		granProvider,
+		challengeDifficulty,
+		challengeLength,
 		logger,
 	}
 }
@@ -76,7 +90,7 @@ func NewPOWChallengeHandler(
 func (r *POWChallengeHandler) Handle() error {
 	r.logger.Debug("start handling pow challenge")
 
-	challenge := r.challengeRandomizer.Generate()
+	challenge := r.challengeRandomizer.Generate(r.challengeLength)
 
 	r.logger.Debug(fmt.Sprintf("challenge: %s", challenge))
 
@@ -85,11 +99,11 @@ func (r *POWChallengeHandler) Handle() error {
 
 	r.logger.Debug(fmt.Sprintf("nonce: %s", nonce))
 
-	if !r.challengeVerifier.Verify(challenge, nonce) {
+	if !r.challengeVerifier.Verify(challenge, nonce, r.challengeDifficulty) {
 		return errors.New("challenge verification failed")
 	}
 
-	grant := r.granProvider.Provide(nonce)
+	grant := r.granProvider.Provide()
 	r.out <- grant.Bytes()
 
 	r.logger.Info(fmt.Sprintf("client granted: %s", grant))

@@ -13,8 +13,13 @@ import (
 )
 
 func main() {
-	const serverAddress = "localhost:8080"
-	const difficulty = 4
+	const localServerAddress = "localhost:8080"
+	const challengeDifficulty = 4
+
+	serverAddress := os.Getenv("SERVER_ADDRESS")
+	if serverAddress == "" {
+		serverAddress = localServerAddress
+	}
 
 	logger := lib.NewStdLogger("client", lib.LogLevelInfo)
 	logger.Info(fmt.Sprintf("connecting to %s", serverAddress))
@@ -34,7 +39,7 @@ func main() {
 	}()
 
 	nonceFinder := domain.NewIncrementalNonceFinder()
-	powClient := application.NewPOWGrantReceiver(in, out, nonceFinder, difficulty, logger)
+	powClient := application.NewPOWGrantReceiver(in, out, nonceFinder, challengeDifficulty, logger)
 
 	resultChan := make(chan domain.Grant)
 	go func() {

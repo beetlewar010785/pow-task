@@ -16,11 +16,18 @@ import (
 func TestIntegration(t *testing.T) {
 	t.Run("should pass PoW challenge", func(t *testing.T) {
 		const randomPort = ":0"
-		const difficulty = 5
+		const challengeDifficulty = 4
+		const challengeLength = 16
 		logLevel := lib.LogLevelDebug
 
 		grantProvider := &grantProviderMock{grant: "expected-grant"}
-		tcpServer := createTCPServer(randomPort, grantProvider, lib.NewStdLogger("server", logLevel))
+		tcpServer := createTCPServer(
+			randomPort,
+			grantProvider,
+			challengeDifficulty,
+			challengeLength,
+			lib.NewStdLogger("server", logLevel),
+		)
 
 		require.NoError(t, tcpServer.Listen())
 
@@ -37,7 +44,7 @@ func TestIntegration(t *testing.T) {
 		serverAddress := tcpServer.Address()
 		powClient, tcpClient, err := createClient(
 			serverAddress,
-			difficulty,
+			challengeDifficulty,
 			lib.NewStdLogger("client", logLevel),
 		)
 		require.NoError(t, err)
@@ -72,11 +79,20 @@ func WaitForServer(t *testing.T, server *adapter.TCPServer) {
 func createTCPServer(
 	serverAddress string,
 	grantProvider domain.GrantProvider,
+	challengeDifficulty domain.Difficulty,
+	challengeLength int,
 	logger lib.Logger,
 ) *adapter.TCPServer {
 	challengeRandomizer := domain.NewSimpleChallengeRandomizer()
 	challengeVerifier := domain.NewSimpleChallengeVerifier()
-	powServerFactory := application.NewPOWChallengeHandlerFactory(challengeRandomizer, challengeVerifier, grantProvider, logger)
+	powServerFactory := application.NewPOWChallengeHandlerFactory(
+		challengeRandomizer,
+		challengeVerifier,
+		grantProvider,
+		challengeDifficulty,
+		challengeLength,
+		logger,
+	)
 	return adapter.NewTCPServer(serverAddress, powServerFactory, logger)
 }
 
@@ -108,6 +124,6 @@ type grantProviderMock struct {
 	grant domain.Grant
 }
 
-func (r *grantProviderMock) Provide(_ domain.Nonce) domain.Grant {
+func (r *grantProviderMock) Provide() domain.Grant {
 	return r.grant
 }

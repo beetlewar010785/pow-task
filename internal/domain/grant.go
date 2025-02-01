@@ -1,5 +1,10 @@
 package domain
 
+import (
+	"math/rand"
+	"time"
+)
+
 type Grant string
 
 func (r Grant) Bytes() []byte {
@@ -7,16 +12,21 @@ func (r Grant) Bytes() []byte {
 }
 
 type GrantProvider interface {
-	Provide(nonce Nonce) Grant
+	Provide() Grant
 }
 
-type SimpleGrantProvider struct {
+type RandomPhraseGrantProvider struct {
+	phrases []Grant
 }
 
-func NewSimpleGrantProvider() *SimpleGrantProvider {
-	return &SimpleGrantProvider{}
+func NewRandomPhraseGrantProvider(grants []Grant) *RandomPhraseGrantProvider {
+	return &RandomPhraseGrantProvider{
+		grants,
+	}
 }
 
-func (g *SimpleGrantProvider) Provide(_ Nonce) Grant {
-	return "some-grant"
+func (r *RandomPhraseGrantProvider) Provide() Grant {
+	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	index := rnd.Intn(len(r.phrases))
+	return r.phrases[index]
 }
