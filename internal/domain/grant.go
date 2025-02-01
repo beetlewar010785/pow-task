@@ -1,32 +1,31 @@
 package domain
 
-import (
-	"math/rand"
-	"time"
+type GrantResult int
+
+const (
+	GrantResultSuccess GrantResult = iota
+	GrantResultFailure
 )
 
-type Grant string
-
-func (r Grant) Bytes() []byte {
-	return []byte(r)
+type Grant struct {
+	Result GrantResult
+	Quote  *string
 }
 
-type GrantProvider interface {
-	Provide() Grant
-}
-
-type RandomPhraseGrantProvider struct {
-	phrases []Grant
-}
-
-func NewRandomPhraseGrantProvider(grants []Grant) *RandomPhraseGrantProvider {
-	return &RandomPhraseGrantProvider{
-		grants,
+func NewGrant(
+	result GrantResult,
+	quote *string,
+) Grant {
+	return Grant{
+		result,
+		quote,
 	}
 }
 
-func (r *RandomPhraseGrantProvider) Provide() Grant {
-	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-	index := rnd.Intn(len(r.phrases))
-	return r.phrases[index]
+func SuccessGrant(quote string) Grant {
+	return NewGrant(GrantResultSuccess, &quote)
+}
+
+func FailureGrant() Grant {
+	return NewGrant(GrantResultFailure, nil)
 }

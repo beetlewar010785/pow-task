@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/beetlewar010785/pow-task/internal/adapter"
-	"github.com/beetlewar010785/pow-task/internal/application/message"
+	"github.com/beetlewar010785/pow-task/internal/domain"
 	"os"
 )
 
@@ -32,7 +32,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if grant.Result != message.GrantResultSuccess {
+	if grant.Result != domain.GrantResultSuccess {
 		logger.Error(fmt.Sprintf("failed to grant: %d", grant.Result))
 		os.Exit(1)
 	}

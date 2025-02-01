@@ -2,7 +2,6 @@ package adapter
 
 import (
 	"fmt"
-	"github.com/beetlewar010785/pow-task/internal/adapter/serialization"
 	"github.com/beetlewar010785/pow-task/internal/application"
 	"github.com/beetlewar010785/pow-task/internal/domain"
 	"net"
@@ -17,13 +16,11 @@ func CreateTCPClient(
 		return nil, nil, fmt.Errorf("failed to dial tcp: %w", err)
 	}
 
-	powWriterReader := serialization.NewBinaryPOWWriterReader(client, client)
+	readWriter := NewStringReadWriter(client)
 	grantReceiver := application.NewPOWGrantReceiver(
 		domain.NewIncrementalNonceFinder(),
 		challengeDifficulty,
-		powWriterReader,
-		powWriterReader,
-		serialization.NewJSONGrantWriterReader(client, client),
+		readWriter,
 	)
 
 	return client, grantReceiver, nil

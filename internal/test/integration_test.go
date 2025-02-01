@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"github.com/beetlewar010785/pow-task/internal/application/message"
 	"net"
 	"testing"
 	"time"
@@ -79,7 +78,7 @@ func TestIntegration(t *testing.T) {
 		actualGrant, err := suite.grantReceiver.Receive()
 		require.NoError(t, err)
 
-		expectedGrant := message.SuccessGrant(string(suite.grantProviderMock.grant))
+		expectedGrant := domain.SuccessGrant(string(suite.grantProviderMock.grant))
 		assert.Equal(t, expectedGrant, actualGrant)
 	})
 }
@@ -102,9 +101,9 @@ func WaitForServer(t *testing.T, server *adapter.TCPServer) {
 }
 
 type grantProviderMock struct {
-	grant domain.Grant
+	grant domain.Quote
 }
 
-func (r *grantProviderMock) Provide() domain.Grant {
+func (r *grantProviderMock) Provide() domain.Quote {
 	return r.grant
 }

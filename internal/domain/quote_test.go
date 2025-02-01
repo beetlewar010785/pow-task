@@ -5,12 +5,12 @@ import (
 	"testing"
 )
 
-func TestRandomPhraseGrantProvider(t *testing.T) {
-	t.Run("provide any grant from the phrases", func(t *testing.T) {
-		phrases := []Grant{
-			"phrase 1",
-			"phrase 2",
-			"phrase 3",
+func TestRandomQuoteProvider(t *testing.T) {
+	t.Run("provide any quote", func(t *testing.T) {
+		phrases := []Quote{
+			"quote 1",
+			"quote 2",
+			"quote 3",
 		}
 
 		sut := NewRandomPhraseGrantProvider(phrases)

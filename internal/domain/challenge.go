@@ -4,45 +4,39 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type Challenge string
+type Nonce int
 
-func (r Challenge) String() string {
-	return string(r)
-}
-
-func (r Challenge) Bytes() []byte {
-	return []byte(r)
-}
-
-func ChallengeFromBytes(b []byte) Challenge {
-	return Challenge(b)
-}
+type Difficulty int
 
 type ChallengeRandomizer interface {
-	Generate(length int) Challenge
+	Generate() Challenge
 }
 
 type SimpleChallengeRandomizer struct {
+	challengeLength int
 }
 
-func NewSimpleChallengeRandomizer() *SimpleChallengeRandomizer {
-	return &SimpleChallengeRandomizer{}
+func NewSimpleChallengeRandomizer(challengeLength int) *SimpleChallengeRandomizer {
+	return &SimpleChallengeRandomizer{
+		challengeLength: challengeLength,
+	}
 }
 
-func (r *SimpleChallengeRandomizer) Generate(length int) Challenge {
+func (r *SimpleChallengeRandomizer) Generate() Challenge {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	b := make([]byte, length)
+	b := make([]byte, r.challengeLength)
 	for i := range b {
 		b[i] = charset[rnd.Intn(len(charset))]
 	}
-	return ChallengeFromBytes(b)
-
+	return Challenge(b)
 }
 
 type ChallengeVerifier interface {
@@ -61,9 +55,34 @@ func (r *SimpleChallengeVerifier) Verify(
 	nonce Nonce,
 	difficulty Difficulty,
 ) bool {
-	guess := challenge.String() + nonce.String()
+	guess := string(challenge) + strconv.Itoa(int(nonce))
 	hash := sha256.Sum256([]byte(guess))
 	hashHex := hex.EncodeToString(hash[:])
 
-	return strings.HasPrefix(hashHex, strings.Repeat("0", difficulty.Int()))
+	return strings.HasPrefix(hashHex, strings.Repeat("0", int(difficulty)))
+}
+
+type NonceFinder interface {
+	Find(challenge Challenge, difficulty Difficulty) Nonce
+}
+
+type IncrementalNonceFinder struct {
+}
+
+func NewIncrementalNonceFinder() NonceFinder {
+	return &IncrementalNonceFinder{}
+}
+
+func (r *IncrementalNonceFinder) Find(challenge Challenge, difficulty Difficulty) Nonce {
+	nonce := 0
+	for {
+		guess := string(challenge) + strconv.Itoa(nonce)
+		hash := sha256.Sum256([]byte(guess))
+		hashHex := hex.EncodeToString(hash[:])
+
+		if strings.HasPrefix(hashHex, strings.Repeat("0", int(difficulty))) {
+			return Nonce(nonce)
+		}
+		nonce++
+	}
 }

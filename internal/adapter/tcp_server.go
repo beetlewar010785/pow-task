@@ -19,19 +19,18 @@ type TCPServer struct {
 
 func StartTCPServer(
 	serverAddress string,
-	grantProvider domain.GrantProvider,
+	grantProvider domain.QuoteProvider,
 	challengeDifficulty domain.Difficulty,
 	challengeLength int,
 	logger domain.Logger,
 ) *TCPServer {
-	challengeRandomizer := domain.NewSimpleChallengeRandomizer()
+	challengeRandomizer := domain.NewSimpleChallengeRandomizer(challengeLength)
 	challengeVerifier := domain.NewSimpleChallengeVerifier()
 	challengerFactory := application.NewPOWChallengerFactory(
 		challengeRandomizer,
 		challengeVerifier,
 		grantProvider,
 		challengeDifficulty,
-		challengeLength,
 	)
 	return &TCPServer{
 		logger:            logger,
@@ -94,7 +93,8 @@ func (r *TCPServer) Run(ctx context.Context) error {
 func (r *TCPServer) performChallenge(conn net.Conn) {
 	defer r.closeConnection(conn)
 
-	challenger := r.challengerFactory.Create(conn, conn)
+	readWriter := NewStringReadWriter(conn)
+	challenger := r.challengerFactory.Create(readWriter)
 	if err := challenger.Challenge(); err != nil {
 		r.logger.Warn(fmt.Sprintf("challenge for %s failed: %v", conn.RemoteAddr(), err))
 	} else {

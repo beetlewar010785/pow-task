@@ -1,9 +1,11 @@
 package application
 
-import "io"
+import (
+	"github.com/beetlewar010785/pow-task/internal/domain"
+)
 
 type ChallengerFactory interface {
-	Create(reader io.Reader, writer io.Writer) Challenger
+	Create(readWriter domain.ReadWriter) Challenger
 }
 
 type Challenger interface {
