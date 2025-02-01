@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"github.com/beetlewar010785/pow-task/internal/defaults"
 	"net"
 	"testing"
 	"time"
@@ -50,7 +51,7 @@ func TestIntegration(t *testing.T) {
 
 		WaitForServer(t, tcpServer)
 
-		conn, grantReceiver, err := adapter.CreateTCPClient(tcpServer.Address(), challengeDifficulty)
+		conn, grantReceiver, err := adapter.CreateTCPClient(tcpServer.Address())
 		require.NoError(t, err)
 
 		return testSuite{
@@ -67,11 +68,8 @@ func TestIntegration(t *testing.T) {
 		_ = suite.client.Close()
 	}
 
-	t.Run("should pass PoW challenge", func(t *testing.T) {
-		const challengeDifficulty = 4
-		const challengeLength = 16
-
-		suite := setup(t, challengeDifficulty, challengeLength)
+	t.Run("should pass POW challenge and get grant", func(t *testing.T) {
+		suite := setup(t, defaults.ChallengeDifficulty, defaults.ChallengeLength)
 		defer tearDown(suite)
 
 		suite.grantProviderMock.grant = "expected-grant"

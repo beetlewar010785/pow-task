@@ -67,21 +67,20 @@ type NonceFinder interface {
 }
 
 type IncrementalNonceFinder struct {
+	challengeVerifier ChallengeVerifier
 }
 
-func NewIncrementalNonceFinder() NonceFinder {
-	return &IncrementalNonceFinder{}
+func NewIncrementalNonceFinder(challengeVerifier ChallengeVerifier) NonceFinder {
+	return &IncrementalNonceFinder{
+		challengeVerifier,
+	}
 }
 
 func (r *IncrementalNonceFinder) Find(challenge Challenge, difficulty Difficulty) Nonce {
-	nonce := 0
+	var nonce Nonce
 	for {
-		guess := string(challenge) + strconv.Itoa(nonce)
-		hash := sha256.Sum256([]byte(guess))
-		hashHex := hex.EncodeToString(hash[:])
-
-		if strings.HasPrefix(hashHex, strings.Repeat("0", int(difficulty))) {
-			return Nonce(nonce)
+		if r.challengeVerifier.Verify(challenge, nonce, difficulty) {
+			return nonce
 		}
 		nonce++
 	}

@@ -9,7 +9,6 @@ import (
 
 func CreateTCPClient(
 	serverAddress string,
-	challengeDifficulty domain.Difficulty,
 ) (net.Conn, application.GrantReceiver, error) {
 	client, err := net.Dial("tcp", serverAddress)
 	if err != nil {
@@ -17,9 +16,9 @@ func CreateTCPClient(
 	}
 
 	readWriter := NewStringReadWriter(client)
+	challengeVerifier := domain.NewSimpleChallengeVerifier()
 	grantReceiver := application.NewPOWGrantReceiver(
-		domain.NewIncrementalNonceFinder(),
-		challengeDifficulty,
+		domain.NewIncrementalNonceFinder(challengeVerifier),
 		readWriter,
 	)
 

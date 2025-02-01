@@ -7,18 +7,15 @@ import (
 
 type POWGrantReceiver struct {
 	nonceFinder domain.NonceFinder
-	difficulty  domain.Difficulty
 	readWriter  domain.ReadWriter
 }
 
 func NewPOWGrantReceiver(
 	nonceFinder domain.NonceFinder,
-	difficulty domain.Difficulty,
 	readWriter domain.ReadWriter,
 ) *POWGrantReceiver {
 	return &POWGrantReceiver{
 		nonceFinder,
-		difficulty,
 		readWriter,
 	}
 }
@@ -29,7 +26,7 @@ func (r *POWGrantReceiver) Receive() (domain.Grant, error) {
 		return domain.Grant{}, fmt.Errorf("error reading pow request: %w", err)
 	}
 
-	nonce := r.nonceFinder.Find(powRequest.Challenge, r.difficulty)
+	nonce := r.nonceFinder.Find(powRequest.Challenge, powRequest.Difficulty)
 	powResponse := domain.NewPOWResponse(powRequest.Challenge, nonce)
 
 	if err := r.readWriter.WritePowResponse(powResponse); err != nil {

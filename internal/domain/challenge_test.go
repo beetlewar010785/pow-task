@@ -51,8 +51,7 @@ func TestSimpleChallengeVerifier(t *testing.T) {
 
 func TestSimpleChallengeRandomizer(t *testing.T) {
 	t.Run("generate random challenge", func(t *testing.T) {
-		const challengeLength = 16
-		sut := NewSimpleChallengeRandomizer(challengeLength)
+		sut := NewSimpleChallengeRandomizer(12)
 
 		challenge1 := sut.Generate()
 		challenge2 := sut.Generate()
@@ -61,40 +60,34 @@ func TestSimpleChallengeRandomizer(t *testing.T) {
 	})
 
 	t.Run("generate challenge of the expected length", func(t *testing.T) {
-		const challengeLength = 8
-		sut := NewSimpleChallengeRandomizer(challengeLength)
+		sut := NewSimpleChallengeRandomizer(4)
 
 		challenge := sut.Generate()
 
-		assert.Len(t, challenge, challengeLength)
+		assert.Len(t, challenge, 4)
 	})
 }
 
 func TestIncrementalNonceFinder(t *testing.T) {
-	testCases := []struct {
-		challenge     Challenge
-		expectedNonce Nonce
-		difficulty    Difficulty
-	}{
-		{
-			"first-challenge",
-			776,
-			3,
-		},
-		{
-			"second-challenge",
-			14707,
-			4,
-		},
-	}
+	t.Run("incrementally search for nonce", func(t *testing.T) {
+		challengeVerifier := new(challengeVerifierMock)
+		challengeVerifier.expectedNonce = 42
+		sut := NewIncrementalNonceFinder(challengeVerifier)
 
-	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("%d nonce for challenge %s", tc.expectedNonce, tc.challenge), func(t *testing.T) {
-			sut := NewIncrementalNonceFinder()
+		actualNonce := sut.Find("any", 3)
 
-			actualNonce := sut.Find(tc.challenge, tc.difficulty)
+		assert.Equal(t, challengeVerifier.expectedNonce, actualNonce)
+	})
+}
 
-			assert.Equal(t, tc.expectedNonce, actualNonce)
-		})
-	}
+type challengeVerifierMock struct {
+	expectedNonce Nonce
+}
+
+func (r *challengeVerifierMock) Verify(
+	_ Challenge,
+	nonce Nonce,
+	_ Difficulty,
+) bool {
+	return nonce == r.expectedNonce
 }

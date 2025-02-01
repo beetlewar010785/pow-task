@@ -3,23 +3,21 @@ package main
 import (
 	"fmt"
 	"github.com/beetlewar010785/pow-task/internal/adapter"
+	"github.com/beetlewar010785/pow-task/internal/defaults"
 	"github.com/beetlewar010785/pow-task/internal/domain"
 	"os"
 )
 
 func main() {
-	const localServerAddress = "localhost:8080"
-	const challengeDifficulty = 4
-
 	serverAddress := os.Getenv("SERVER_ADDRESS")
 	if serverAddress == "" {
-		serverAddress = localServerAddress
+		serverAddress = fmt.Sprintf("localhost:%s", defaults.ServerPort)
 	}
 
-	logger := adapter.NewStdLogger("client", adapter.LogLevelInfo)
+	logger := adapter.NewStdLogger("client", defaults.LogLevel)
 	logger.Info(fmt.Sprintf("connecting to %s", serverAddress))
 
-	conn, granReceiver, err := adapter.CreateTCPClient(serverAddress, challengeDifficulty)
+	conn, granReceiver, err := adapter.CreateTCPClient(serverAddress)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to connect to %s", serverAddress))
 		os.Exit(1)

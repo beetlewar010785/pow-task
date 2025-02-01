@@ -7,16 +7,16 @@ import (
 
 func TestRandomQuoteProvider(t *testing.T) {
 	t.Run("provide any quote", func(t *testing.T) {
-		phrases := []Quote{
+		quotes := []Quote{
 			"quote 1",
 			"quote 2",
 			"quote 3",
 		}
 
-		sut := NewRandomPhraseGrantProvider(phrases)
+		sut := NewRandomQuoteProvider(quotes)
 
-		actualGrant := sut.Provide()
+		actualQuote := sut.Provide()
 
-		assert.Contains(t, phrases, actualGrant)
+		assert.Contains(t, quotes, actualQuote)
 	})
 }

@@ -19,7 +19,7 @@ type RandomQuoteProvider struct {
 	phrases []Quote
 }
 
-func NewRandomPhraseGrantProvider(quotes []Quote) *RandomQuoteProvider {
+func NewRandomQuoteProvider(quotes []Quote) *RandomQuoteProvider {
 	return &RandomQuoteProvider{
 		quotes,
 	}
