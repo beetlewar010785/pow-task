@@ -84,15 +84,18 @@ func createTCPServer(
 ) *adapter.TCPServer {
 	challengeRandomizer := domain.NewSimpleChallengeRandomizer()
 	challengeVerifier := domain.NewSimpleChallengeVerifier()
-	powServerFactory := application.NewPOWChallengeHandlerFactory(
+	challengerFactory := application.NewPOWChallengerFactory(
 		challengeRandomizer,
 		challengeVerifier,
 		grantProvider,
 		challengeDifficulty,
 		challengeLength,
+	)
+	return adapter.NewTCPServer(
+		serverAddress,
+		challengerFactory,
 		logger,
 	)
-	return adapter.NewTCPServer(serverAddress, powServerFactory, logger)
 }
 
 func createClient(

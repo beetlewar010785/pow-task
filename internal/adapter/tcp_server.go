@@ -10,22 +10,22 @@ import (
 )
 
 type TCPServer struct {
-	address          string
-	logger           domain.Logger
-	listener         net.Listener
-	connections      sync.Map
-	powServerFactory application.POWChallengeHandlerFactory
+	address           string
+	logger            domain.Logger
+	listener          net.Listener
+	connections       sync.Map
+	challengerFactory application.ChallengerFactory
 }
 
 func NewTCPServer(
 	address string,
-	powServerFactory application.POWChallengeHandlerFactory,
+	challengerFactory application.ChallengerFactory,
 	logger domain.Logger,
 ) *TCPServer {
 	return &TCPServer{
-		logger:           logger,
-		powServerFactory: powServerFactory,
-		address:          address,
+		logger:            logger,
+		challengerFactory: challengerFactory,
+		address:           address,
 	}
 }
 
@@ -75,44 +75,30 @@ func (r *TCPServer) Run(ctx context.Context) error {
 
 		r.logger.Info(fmt.Sprintf("client connected: %s", conn.RemoteAddr()))
 
-		in := make(chan []byte)
-		out := make(chan []byte)
-		tcpConnection := NewTCPConnection(conn, in, out, r.logger)
-
-		r.connections.Store(conn, tcpConnection)
-
-		go r.handleConnection(tcpConnection, in, out)
-		go r.runReader(tcpConnection)
-		go r.runWriter(tcpConnection)
+		r.connections.Store(conn, conn)
+		go r.performChallenge(conn)
 	}
 }
 
-func (r *TCPServer) handleConnection(
-	conn *TCPConnection,
-	in chan []byte,
-	out chan []byte,
-) {
-	powServer := r.powServerFactory.Create(in, out)
-	if err := powServer.Handle(); err != nil {
-		r.logger.Warn(fmt.Sprintf("connection handler failed for %s: %v", conn.conn.RemoteAddr(), err))
+func (r *TCPServer) performChallenge(conn net.Conn) {
+	defer r.closeConnection(conn)
+
+	challenger := r.challengerFactory.Create(conn, conn)
+	if err := challenger.Challenge(); err != nil {
+		r.logger.Warn(fmt.Sprintf("challenge for %s failed: %v", conn.RemoteAddr(), err))
+	} else {
+		r.logger.Debug(fmt.Sprintf("challenge for %s succeeded", conn.RemoteAddr()))
 	}
 }
 
-func (r *TCPServer) runReader(conn *TCPConnection) {
-	if err := conn.RunReader(); err != nil {
-		r.logger.Error(fmt.Sprintf("failed to read from %s: %v", conn.conn.RemoteAddr(), err))
-	}
-}
-
-func (r *TCPServer) runWriter(conn *TCPConnection) {
-	if err := conn.RunWriter(); err != nil {
-		r.logger.Error(fmt.Sprintf("failed to write to %s: %v", conn.conn.RemoteAddr(), err))
-	}
+func (r *TCPServer) closeConnection(conn net.Conn) {
+	r.connections.Delete(conn)
+	_ = conn.Close()
 }
 
 func (r *TCPServer) closeAllConnections() {
 	r.connections.Range(func(key, value interface{}) bool {
-		conn := value.(*TCPConnection)
+		conn := value.(net.Conn)
 		_ = conn.Close()
 		return true
 	})
