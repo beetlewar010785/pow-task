@@ -37,3 +37,12 @@ jobs:
           file: ./coverage.out
           flags: unittests
           fail_ci_if_error: true
+
+      - name: Build server image
+        run: make build-server
+
+      - name: Build client image
+        run: make build-client
+
+      - name: Run integration tests
+        run: ./integration-test.sh

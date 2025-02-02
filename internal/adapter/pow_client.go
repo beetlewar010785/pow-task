@@ -10,19 +10,20 @@ import (
 
 func CreatePOWClient(
 	serverAddress string,
-	findNonceTimeout time.Duration,
+	solveTimeout time.Duration,
+	logger domain.Logger,
 ) (net.Conn, application.Solver, error) {
 	client, err := net.Dial("tcp", serverAddress)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to dial tcp: %w", err)
 	}
 
-	readWriter := NewStringReadWriter(client)
-	challengeVerifier := domain.NewSimpleChallengeVerifier()
+	readWriter := NewReadWriterLoggingDecorator(NewStringReadWriter(client), logger)
+	challengeVerifier := domain.NewSHA256ChallengeVerifier()
 	solver := application.NewPOWSolver(
 		domain.NewIncrementalNonceFinder(challengeVerifier),
 		readWriter,
-		findNonceTimeout,
+		solveTimeout,
 	)
 
 	return client, solver, nil

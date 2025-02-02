@@ -25,6 +25,24 @@ The core business logic is located in the **application layer**:
   - Searches for the correct nonce and submits the solution (client-side logic).
   - Receives the **grant** as a result and returns it upstream.
 
+- ### 🌐 Server (POWServer)
+- 📂 **Implementation:** [./internal/adapter/pow_server.go](./internal/adapter/pow_server.go)
+- **Description:**
+  - `POWServer` is a **TCP server** that enforces PoW protection.
+  - When a client connects, it **sends a challenge** (a computational puzzle).
+  - The client must solve the challenge and send back a **valid nonce**.
+  - If the nonce is correct, the server **grants access** by sending a **quote from "Word of Wisdom"**.
+  - If verification fails, the server returns a **failure message**.
+
+- ### 🖥️ Client (POWClient)
+- 📂 **Implementation:** [./internal/adapter/pow_client.go](./internal/adapter/pow_client.go)
+- **Description:**
+  - The client connects to the `POWServer` over TCP.
+  - It receives a **PoW challenge** and computes the correct **nonce**.
+  - Once solved, the client sends the nonce back to the server.
+  - If successful, the server responds with a **grant** (a motivational quote).
+  - The client **prints the quote to the console** and **exits**.
+
 ---
 
 ## ⚙️ Installation
@@ -46,6 +64,12 @@ make lint
 make test
 ```
 🛠️ Executes the test suite.
+
+### 🧪 Running Integration Tests
+```sh
+./integration-test.sh
+```
+🛠️ Executes the integration test suite (server and client docker images must be built).
 
 ### 📦 Building Docker Images
 ```sh
@@ -90,7 +114,6 @@ go run ./cmd/client/main.go
 ⚠️ **Potential improvements and known issues:**
 - 📝 **StringReadWriter serializer** ([./internal/adapter/string_read_writer.go](./internal/adapter/string_read_writer.go)) is **not optimized** and may require performance improvements.
 - ❌ **Large portions of negative test scenarios** are **not covered**, including timeout handling for PoW verification.
-- 🔄 **Server-client integration** when running inside **Docker** has **not been thoroughly tested**.
 
 ---
 

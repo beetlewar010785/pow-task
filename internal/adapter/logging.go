@@ -25,11 +25,11 @@ func (r LogLevel) String() string {
 }
 
 const (
-	LogLevelTrace LogLevel = iota
-	LogLevelDebug
-	LogLevelInfo
+	LogLevelError LogLevel = iota
 	LogLevelWarn
-	LogLevelError
+	LogLevelInfo
+	LogLevelDebug
+	LogLevelTrace
 )
 
 type StdLogger struct {
@@ -65,7 +65,7 @@ func (r *StdLogger) Error(msg string) {
 }
 
 func (r *StdLogger) log(level LogLevel, msg string) {
-	if level < r.logLevel {
+	if level > r.logLevel {
 		return
 	}
 

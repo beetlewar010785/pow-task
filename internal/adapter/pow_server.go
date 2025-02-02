@@ -27,8 +27,8 @@ func StartPOWServer(
 	verificationTimeout time.Duration,
 	logger domain.Logger,
 ) *POWServer {
-	challengeRandomizer := domain.NewSimpleChallengeRandomizer(challengeLength)
-	challengeVerifier := domain.NewSimpleChallengeVerifier()
+	challengeRandomizer := domain.NewASCIIChallengeRandomizer(challengeLength)
+	challengeVerifier := domain.NewSHA256ChallengeVerifier()
 	verifierFactory := application.NewPOWVerifierFactory(
 		challengeRandomizer,
 		challengeVerifier,
@@ -50,7 +50,7 @@ func (r *POWServer) Address() string {
 	return r.listener.Addr().String()
 }
 
-func (r *POWServer) Listen() error {
+func (r *POWServer) Run(ctx context.Context) error {
 	listener, err := net.Listen("tcp", r.address)
 	if err != nil {
 		return fmt.Errorf("failed to start tcp listener on %s: %w", r.address, err)
@@ -58,13 +58,6 @@ func (r *POWServer) Listen() error {
 
 	r.listener = listener
 	r.logger.Debug(fmt.Sprintf("listening on %s", r.address))
-	return nil
-}
-
-func (r *POWServer) Run(ctx context.Context) error {
-	if r.listener == nil {
-		return fmt.Errorf("server is not listening")
-	}
 
 	errCh := make(chan error, 1)
 
@@ -76,6 +69,7 @@ func (r *POWServer) Run(ctx context.Context) error {
 	}()
 
 	for {
+		r.logger.Debug("accepting connections")
 		conn, err := r.listener.Accept()
 		if err != nil {
 			select {
@@ -93,7 +87,7 @@ func (r *POWServer) Run(ctx context.Context) error {
 		go func() {
 			defer r.closeConnection(conn)
 
-			err := r.performVerificationWithTimeout(ctx, conn)
+			err := r.performVerificationWithTimeout(ctx, conn, r.logger)
 			if err != nil {
 				r.logger.Warn(fmt.Sprintf("challenge failed: %v", err))
 			} else {
@@ -103,18 +97,18 @@ func (r *POWServer) Run(ctx context.Context) error {
 	}
 }
 
-func (r *POWServer) performVerificationWithTimeout(ctx context.Context, conn net.Conn) error {
+func (r *POWServer) performVerificationWithTimeout(ctx context.Context, conn net.Conn, logger domain.Logger) error {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, r.verificationTimeout)
 	defer cancel()
 
-	return r.performVerification(ctxWithTimeout, conn)
+	return r.performVerification(ctxWithTimeout, conn, logger)
 }
 
-func (r *POWServer) performVerification(ctx context.Context, conn net.Conn) error {
+func (r *POWServer) performVerification(ctx context.Context, conn net.Conn, logger domain.Logger) error {
 	done := make(chan error, 1)
 
 	go func() {
-		readWriter := NewStringReadWriter(conn)
+		readWriter := NewReadWriterLoggingDecorator(NewStringReadWriter(conn), logger)
 		verifier := r.verifierFactory.Create(readWriter)
 		done <- verifier.Verify()
 	}()
@@ -128,6 +122,7 @@ func (r *POWServer) performVerification(ctx context.Context, conn net.Conn) erro
 }
 
 func (r *POWServer) closeConnection(conn net.Conn) {
+	r.logger.Debug(fmt.Sprintf("closing connection: %s", conn.RemoteAddr()))
 	r.connections.Delete(conn)
 	_ = conn.Close()
 }
