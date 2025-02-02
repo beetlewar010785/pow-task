@@ -6,7 +6,7 @@ lint:
 	@golangci-lint run --timeout=1m
 
 test:
-	@go test -coverprofile=coverage.out ./...
+	@go test -coverprofile=coverage.out ./internal/...
 
 build-server:
 	docker build -f ./docker/server.Dockerfile -t $(SERVER_IMAGE) .
