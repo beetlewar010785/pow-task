@@ -11,13 +11,14 @@ import (
 func CreatePOWClient(
 	serverAddress string,
 	solveTimeout time.Duration,
+	logger domain.Logger,
 ) (net.Conn, application.Solver, error) {
 	client, err := net.Dial("tcp", serverAddress)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to dial tcp: %w", err)
 	}
 
-	readWriter := NewStringReadWriter(client)
+	readWriter := NewReadWriterLoggingDecorator(NewStringReadWriter(client), logger)
 	challengeVerifier := domain.NewSimpleChallengeVerifier()
 	solver := application.NewPOWSolver(
 		domain.NewIncrementalNonceFinder(challengeVerifier),

@@ -30,6 +30,7 @@ func main() {
 	conn, grantReceiver, err := adapter.CreatePOWClient(
 		cfg.ServerAddress,
 		time.Duration(cfg.SolveTimeoutSec)*time.Second,
+		logger,
 	)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to connect to %s", cfg.ServerAddress))
