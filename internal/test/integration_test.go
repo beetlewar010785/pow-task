@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"github.com/beetlewar010785/pow-task/internal/defaults"
 	"net"
 	"testing"
 	"time"
@@ -36,6 +35,7 @@ func TestIntegration(t *testing.T) {
 			grantProvider,
 			challengeDifficulty,
 			challengeLength,
+			time.Second,
 			adapter.NewStdLogger("server", adapter.LogLevelInfo),
 		)
 
@@ -69,7 +69,7 @@ func TestIntegration(t *testing.T) {
 	}
 
 	t.Run("should pass POW challenge and get grant", func(t *testing.T) {
-		suite := setup(t, defaults.ChallengeDifficulty, defaults.ChallengeLength)
+		suite := setup(t, 2, 10)
 		defer tearDown(suite)
 
 		suite.grantProviderMock.grant = "expected-grant"

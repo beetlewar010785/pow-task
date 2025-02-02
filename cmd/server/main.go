@@ -25,6 +25,7 @@ func main() {
 		domain.NewRandomQuoteProvider(defaults.WordOfWisdomQuotes),
 		defaults.ChallengeDifficulty,
 		defaults.ChallengeLength,
+		defaults.ChallengeDifficulty,
 		logger,
 	)
 
