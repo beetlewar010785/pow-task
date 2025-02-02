@@ -21,11 +21,11 @@ func NewStringReadWriter(readWriter io.ReadWriter) *StringReadWriter {
 	}
 }
 
-func (r *StringReadWriter) WritePowRequest(powRequest domain.POWRequest) error {
+func (r *StringReadWriter) WritePOWRequest(powRequest domain.POWRequest) error {
 	return r.write(string(powRequest.Challenge), strconv.Itoa(int(powRequest.Difficulty)))
 }
 
-func (r *StringReadWriter) ReadPowRequest() (domain.POWRequest, error) {
+func (r *StringReadWriter) ReadPOWRequest() (domain.POWRequest, error) {
 	fields, err := r.read()
 	if err != nil {
 		return domain.POWRequest{}, err
@@ -35,11 +35,11 @@ func (r *StringReadWriter) ReadPowRequest() (domain.POWRequest, error) {
 	return domain.NewPOWRequest(domain.Challenge(fields[0]), domain.Difficulty(i)), nil
 }
 
-func (r *StringReadWriter) WritePowResponse(powResponse domain.POWResponse) error {
+func (r *StringReadWriter) WritePOWResponse(powResponse domain.POWResponse) error {
 	return r.write(string(powResponse.Challenge), strconv.Itoa(int(powResponse.Nonce)))
 }
 
-func (r *StringReadWriter) ReadPowResponse() (domain.POWResponse, error) {
+func (r *StringReadWriter) ReadPOWResponse() (domain.POWResponse, error) {
 	fields, err := r.read()
 	if err != nil {
 		return domain.POWResponse{}, err
@@ -55,7 +55,7 @@ func (r *StringReadWriter) WriteGrant(grant domain.Grant) error {
 	}
 
 	if grant.Quote != nil {
-		fields = append(fields, *grant.Quote)
+		fields = append(fields, string(*grant.Quote))
 	}
 
 	return r.write(fields...)
@@ -67,9 +67,10 @@ func (r *StringReadWriter) ReadGrant() (domain.Grant, error) {
 		return domain.Grant{}, err
 	}
 
-	var quote *string
+	var quote *domain.Quote
 	if len(fields) > 1 {
-		quote = &fields[1]
+		q := domain.Quote(fields[1])
+		quote = &q
 	}
 
 	i, _ := strconv.Atoi(fields[0])

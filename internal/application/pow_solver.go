@@ -21,7 +21,7 @@ func NewPOWSolver(
 }
 
 func (r *POWSolver) Solve() (domain.Grant, error) {
-	powRequest, err := r.readWriter.ReadPowRequest()
+	powRequest, err := r.readWriter.ReadPOWRequest()
 	if err != nil {
 		return domain.Grant{}, fmt.Errorf("error reading pow request: %w", err)
 	}
@@ -29,7 +29,7 @@ func (r *POWSolver) Solve() (domain.Grant, error) {
 	nonce := r.nonceFinder.Find(powRequest.Challenge, powRequest.Difficulty)
 	powResponse := domain.NewPOWResponse(powRequest.Challenge, nonce)
 
-	if err := r.readWriter.WritePowResponse(powResponse); err != nil {
+	if err := r.readWriter.WritePOWResponse(powResponse); err != nil {
 		return domain.Grant{}, fmt.Errorf("error writing pow response: %w", err)
 	}
 

@@ -76,7 +76,7 @@ func TestIntegration(t *testing.T) {
 		actualGrant, err := suite.solver.Solve()
 		require.NoError(t, err)
 
-		expectedGrant := domain.SuccessGrant(string(suite.grantProviderMock.grant))
+		expectedGrant := domain.SuccessGrant(suite.grantProviderMock.grant)
 		assert.Equal(t, expectedGrant, actualGrant)
 	})
 }

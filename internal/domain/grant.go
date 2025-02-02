@@ -9,12 +9,12 @@ const (
 
 type Grant struct {
 	Result GrantResult
-	Quote  *string
+	Quote  *Quote
 }
 
 func NewGrant(
 	result GrantResult,
-	quote *string,
+	quote *Quote,
 ) Grant {
 	return Grant{
 		result,
@@ -22,7 +22,7 @@ func NewGrant(
 	}
 }
 
-func SuccessGrant(quote string) Grant {
+func SuccessGrant(quote Quote) Grant {
 	return NewGrant(GrantResultSuccess, &quote)
 }
 

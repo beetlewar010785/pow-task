@@ -35,5 +35,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger.Info(*grant.Quote)
+	logger.Info(string(*grant.Quote))
 }
