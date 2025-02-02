@@ -17,9 +17,9 @@ func TestStringReadWriter_POWRequest(t *testing.T) {
 			"some-challenge",
 			2,
 		)
-		require.NoError(t, sut.WritePowRequest(initialPowRequest))
+		require.NoError(t, sut.WritePOWRequest(initialPowRequest))
 
-		actualPOWRequest, err := sut.ReadPowRequest()
+		actualPOWRequest, err := sut.ReadPOWRequest()
 		require.NoError(t, err)
 
 		assert.Equal(t, initialPowRequest, actualPOWRequest)
@@ -35,9 +35,9 @@ func TestStringReadWriter_POWResponse(t *testing.T) {
 			"some-challenge",
 			2,
 		)
-		require.NoError(t, sut.WritePowResponse(initialPowResponse))
+		require.NoError(t, sut.WritePOWResponse(initialPowResponse))
 
-		actualPOWResponse, err := sut.ReadPowResponse()
+		actualPOWResponse, err := sut.ReadPOWResponse()
 		require.NoError(t, err)
 
 		assert.Equal(t, initialPowResponse, actualPOWResponse)

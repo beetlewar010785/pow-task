@@ -64,11 +64,11 @@ func (r *POWVerifier) Verify() error {
 	challenge := r.challengeRandomizer.Generate()
 
 	powRequest := domain.NewPOWRequest(challenge, r.challengeDifficulty)
-	if err := r.readWriter.WritePowRequest(powRequest); err != nil {
+	if err := r.readWriter.WritePOWRequest(powRequest); err != nil {
 		return fmt.Errorf("error writing pow request: %w", err)
 	}
 
-	powResponse, err := r.readWriter.ReadPowResponse()
+	powResponse, err := r.readWriter.ReadPOWResponse()
 	if err != nil {
 		return fmt.Errorf("error reading pow response: %w", err)
 	}
@@ -78,7 +78,7 @@ func (r *POWVerifier) Verify() error {
 		grant = domain.FailureGrant()
 	} else {
 		quote := r.grantProvider.Provide()
-		grant = domain.SuccessGrant(string(quote))
+		grant = domain.SuccessGrant(quote)
 	}
 
 	if err := r.readWriter.WriteGrant(grant); err != nil {
