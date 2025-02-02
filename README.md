@@ -8,6 +8,19 @@ For more details, see the task description: [task.pdf](task.pdf).
 ## Architecture
 The project follows the **Hexagonal Architecture** (Ports and Adapters), ensuring modularity and testability.
 
+### Application Layer
+The core business logic is located in the **application layer**:
+
+- **POWVerifier** ([./internal/application/pow_verifier.go](./internal/application/pow_verifier.go))
+    - Generates PoW.
+    - Waits for a nonce from the server.
+    - Verifies the nonce and either returns a **grant** (a quote from Word Of Wisdom) to the client or an error.
+
+- **POWSolver** ([./internal/application/pow_solver.go](./internal/application/pow_solver.go))
+    - Reads the PoW challenge.
+    - Searches for the correct nonce and submits the solution (client-side logic).
+    - Receives the **grant** as a result and returns it upstream.
+
 ## Installation
 Ensure you have **Go** and **Docker** installed before proceeding.
 
