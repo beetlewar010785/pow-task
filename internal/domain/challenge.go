@@ -5,10 +5,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type Challenge string
@@ -31,7 +30,9 @@ type SimpleChallengeRandomizer struct {
 	challengeLength int
 }
 
-func NewSimpleChallengeRandomizer(challengeLength int) *SimpleChallengeRandomizer {
+func NewSimpleChallengeRandomizer(
+	challengeLength int,
+) *SimpleChallengeRandomizer {
 	return &SimpleChallengeRandomizer{
 		challengeLength: challengeLength,
 	}
@@ -39,11 +40,11 @@ func NewSimpleChallengeRandomizer(challengeLength int) *SimpleChallengeRandomize
 
 func (r *SimpleChallengeRandomizer) Generate() Challenge {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	b := make([]byte, r.challengeLength)
 	for i := range b {
-		b[i] = charset[rnd.Intn(len(charset))]
+		index := rand.IntN(len(charset))
+		b[i] = charset[index]
 	}
 	return Challenge(b)
 }

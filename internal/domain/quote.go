@@ -1,8 +1,7 @@
 package domain
 
 import (
-	"math/rand"
-	"time"
+	"math/rand/v2"
 )
 
 type Quote string
@@ -32,7 +31,6 @@ func NewWordOfWisdomQuoteProvider() *WordOfWisdomQuoteProvider {
 }
 
 func (r *WordOfWisdomQuoteProvider) Provide() Quote {
-	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-	index := rnd.Intn(len(r.phrases))
+	index := rand.IntN(len(r.phrases))
 	return r.phrases[index]
 }

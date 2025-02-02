@@ -45,7 +45,7 @@ func main() {
 		time.Duration(cfg.VerificationTimeoutSec)*time.Second,
 		logger,
 	)
-	
+
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
