@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func CreateTCPClient(
+func CreatePOWClient(
 	serverAddress string,
 	findNonceTimeout time.Duration,
 ) (net.Conn, application.Solver, error) {

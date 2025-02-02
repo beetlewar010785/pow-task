@@ -1,0 +1,6 @@
+coverage:
+  project:
+    default:
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default

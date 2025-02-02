@@ -17,7 +17,7 @@ func main() {
 	logger := adapter.NewStdLogger("client", defaults.LogLevel)
 	logger.Info(fmt.Sprintf("connecting to %s", serverAddress))
 
-	conn, grantReceiver, err := adapter.CreateTCPClient(serverAddress, defaults.VerificationTimeout)
+	conn, grantReceiver, err := adapter.CreatePOWClient(serverAddress, defaults.VerificationTimeout)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to connect to %s", serverAddress))
 		os.Exit(1)

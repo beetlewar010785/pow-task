@@ -1,5 +1,7 @@
 # 🚀 Proof of Work Server 🔒
 
+![Coverage](https://codecov.io/gh/beetlewar010785/pow-task/branch/main/graph/badge.svg)
+
 ## 📌 Overview
 This project implements a **Proof of Work (PoW) server** to protect against **DDoS attacks**. The client must perform a computationally expensive operation to receive a response from the server, making large-scale automated requests more costly.
 
