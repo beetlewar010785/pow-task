@@ -25,6 +25,24 @@ The core business logic is located in the **application layer**:
   - Searches for the correct nonce and submits the solution (client-side logic).
   - Receives the **grant** as a result and returns it upstream.
 
+- ### 🌐 Server (POWServer)
+- 📂 **Implementation:** [./internal/adapter/pow_server.go](./internal/adapter/pow_server.go)
+- **Description:**
+  - `POWServer` is a **TCP server** that enforces PoW protection.
+  - When a client connects, it **sends a challenge** (a computational puzzle).
+  - The client must solve the challenge and send back a **valid nonce**.
+  - If the nonce is correct, the server **grants access** by sending a **quote from "Word of Wisdom"**.
+  - If verification fails, the server returns a **failure message**.
+
+- ### 🖥️ Client (POWClient)
+- 📂 **Implementation:** [./internal/adapter/pow_client.go](./internal/adapter/pow_client.go)
+- **Description:**
+  - The client connects to the `POWServer` over TCP.
+  - It receives a **PoW challenge** and computes the correct **nonce**.
+  - Once solved, the client sends the nonce back to the server.
+  - If successful, the server responds with a **grant** (a motivational quote).
+  - The client **prints the quote to the console** and **exits**.
+
 ---
 
 ## ⚙️ Installation
