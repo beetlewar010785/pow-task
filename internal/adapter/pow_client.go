@@ -19,7 +19,7 @@ func CreatePOWClient(
 	}
 
 	readWriter := NewReadWriterLoggingDecorator(NewStringReadWriter(client), logger)
-	challengeVerifier := domain.NewSimpleChallengeVerifier()
+	challengeVerifier := domain.NewSHA256ChallengeVerifier()
 	solver := application.NewPOWSolver(
 		domain.NewIncrementalNonceFinder(challengeVerifier),
 		readWriter,

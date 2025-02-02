@@ -27,8 +27,8 @@ func StartPOWServer(
 	verificationTimeout time.Duration,
 	logger domain.Logger,
 ) *POWServer {
-	challengeRandomizer := domain.NewSimpleChallengeRandomizer(challengeLength)
-	challengeVerifier := domain.NewSimpleChallengeVerifier()
+	challengeRandomizer := domain.NewASCIIChallengeRandomizer(challengeLength)
+	challengeVerifier := domain.NewSHA256ChallengeVerifier()
 	verifierFactory := application.NewPOWVerifierFactory(
 		challengeRandomizer,
 		challengeVerifier,
