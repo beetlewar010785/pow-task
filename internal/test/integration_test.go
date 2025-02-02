@@ -16,7 +16,7 @@ import (
 func TestIntegration(t *testing.T) {
 	type testSuite struct {
 		grantProviderMock *grantProviderMock
-		server            *adapter.TCPServer
+		server            *adapter.POWServer
 		client            net.Conn
 		solver            application.Solver
 		ctx               context.Context
@@ -30,7 +30,7 @@ func TestIntegration(t *testing.T) {
 		const randomPort = ":0"
 
 		grantProvider := new(grantProviderMock)
-		tcpServer := adapter.StartTCPServer(
+		powServer := adapter.StartPOWServer(
 			randomPort,
 			grantProvider,
 			challengeDifficulty,
@@ -39,24 +39,24 @@ func TestIntegration(t *testing.T) {
 			adapter.NewStdLogger("server", adapter.LogLevelInfo),
 		)
 
-		require.NoError(t, tcpServer.Listen())
+		require.NoError(t, powServer.Listen())
 
 		ctx, cancel := context.WithCancel(context.Background())
 		t.Cleanup(cancel)
 
 		go func() {
-			err := tcpServer.Run(ctx)
+			err := powServer.Run(ctx)
 			assert.NoError(t, err, "server.Run() returned an unexpected error")
 		}()
 
-		WaitForServer(t, tcpServer)
+		WaitForServer(t, powServer)
 
-		conn, solver, err := adapter.CreateTCPClient(tcpServer.Address(), 10*time.Second)
+		conn, solver, err := adapter.CreatePOWClient(powServer.Address(), 10*time.Second)
 		require.NoError(t, err)
 
 		return testSuite{
 			grantProvider,
-			tcpServer,
+			powServer,
 			conn,
 			solver,
 			ctx,
@@ -81,7 +81,7 @@ func TestIntegration(t *testing.T) {
 	})
 }
 
-func WaitForServer(t *testing.T, server *adapter.TCPServer) {
+func WaitForServer(t *testing.T, server *adapter.POWServer) {
 	timeout := time.After(2 * time.Second)
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()

@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-type TCPServer struct {
+type POWServer struct {
 	address             string
 	logger              domain.Logger
 	listener            net.Listener
@@ -19,14 +19,14 @@ type TCPServer struct {
 	verificationTimeout time.Duration
 }
 
-func StartTCPServer(
+func StartPOWServer(
 	serverAddress string,
 	grantProvider domain.QuoteProvider,
 	challengeDifficulty domain.Difficulty,
 	challengeLength int,
 	verificationTimeout time.Duration,
 	logger domain.Logger,
-) *TCPServer {
+) *POWServer {
 	challengeRandomizer := domain.NewSimpleChallengeRandomizer(challengeLength)
 	challengeVerifier := domain.NewSimpleChallengeVerifier()
 	verifierFactory := application.NewPOWVerifierFactory(
@@ -35,7 +35,7 @@ func StartTCPServer(
 		grantProvider,
 		challengeDifficulty,
 	)
-	return &TCPServer{
+	return &POWServer{
 		logger:              logger,
 		verifierFactory:     verifierFactory,
 		address:             serverAddress,
@@ -43,14 +43,14 @@ func StartTCPServer(
 	}
 }
 
-func (r *TCPServer) Address() string {
+func (r *POWServer) Address() string {
 	if r.listener == nil {
 		return ""
 	}
 	return r.listener.Addr().String()
 }
 
-func (r *TCPServer) Listen() error {
+func (r *POWServer) Listen() error {
 	listener, err := net.Listen("tcp", r.address)
 	if err != nil {
 		return fmt.Errorf("failed to start tcp listener on %s: %w", r.address, err)
@@ -61,7 +61,7 @@ func (r *TCPServer) Listen() error {
 	return nil
 }
 
-func (r *TCPServer) Run(ctx context.Context) error {
+func (r *POWServer) Run(ctx context.Context) error {
 	if r.listener == nil {
 		return fmt.Errorf("server is not listening")
 	}
@@ -103,14 +103,14 @@ func (r *TCPServer) Run(ctx context.Context) error {
 	}
 }
 
-func (r *TCPServer) performVerificationWithTimeout(ctx context.Context, conn net.Conn) error {
+func (r *POWServer) performVerificationWithTimeout(ctx context.Context, conn net.Conn) error {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, r.verificationTimeout)
 	defer cancel()
 
 	return r.performVerification(ctxWithTimeout, conn)
 }
 
-func (r *TCPServer) performVerification(ctx context.Context, conn net.Conn) error {
+func (r *POWServer) performVerification(ctx context.Context, conn net.Conn) error {
 	done := make(chan error, 1)
 
 	go func() {
@@ -127,12 +127,12 @@ func (r *TCPServer) performVerification(ctx context.Context, conn net.Conn) erro
 	}
 }
 
-func (r *TCPServer) closeConnection(conn net.Conn) {
+func (r *POWServer) closeConnection(conn net.Conn) {
 	r.connections.Delete(conn)
 	_ = conn.Close()
 }
 
-func (r *TCPServer) closeAllConnections() {
+func (r *POWServer) closeAllConnections() {
 	r.connections.Range(func(key, value interface{}) bool {
 		conn := value.(net.Conn)
 		_ = conn.Close()
