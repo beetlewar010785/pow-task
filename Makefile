@@ -23,6 +23,7 @@ run-server: network
 run-client: network
 	docker run --rm -it --name client --network $(NETWORK) -e SERVER_ADDRESS="server:8080" $(CLIENT_IMAGE)
 
-clean:
-	@go clean -testcache
+clean-docker:
+	docker ps -q --filter "name=server" | xargs -r docker stop
+	docker ps -q --filter "name=client" | xargs -r docker stop
 	docker network rm $(NETWORK) || true

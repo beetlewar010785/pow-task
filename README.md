@@ -65,6 +65,12 @@ make test
 ```
 🛠️ Executes the test suite.
 
+### 🧪 Running Integration Tests
+```sh
+./integration-test.sh
+```
+🛠️ Executes the integration test suite (server and client docker images must be built).
+
 ### 📦 Building Docker Images
 ```sh
 make build-server
