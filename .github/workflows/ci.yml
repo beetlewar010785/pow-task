@@ -24,6 +24,12 @@ jobs:
       - name: Install dependencies
         run: go mod tidy
 
+      - name: Run linter
+        run: make lint
+
+      - name: Run tests
+        run: make test
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
@@ -31,9 +37,3 @@ jobs:
           file: ./coverage.out
           flags: unittests
           fail_ci_if_error: true
-
-      - name: Run linter
-        run: make lint
-
-      - name: Run tests
-        run: make test
