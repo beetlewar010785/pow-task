@@ -10,7 +10,7 @@ import (
 
 func CreatePOWClient(
 	serverAddress string,
-	findNonceTimeout time.Duration,
+	solveTimeout time.Duration,
 ) (net.Conn, application.Solver, error) {
 	client, err := net.Dial("tcp", serverAddress)
 	if err != nil {
@@ -22,7 +22,7 @@ func CreatePOWClient(
 	solver := application.NewPOWSolver(
 		domain.NewIncrementalNonceFinder(challengeVerifier),
 		readWriter,
-		findNonceTimeout,
+		solveTimeout,
 	)
 
 	return client, solver, nil

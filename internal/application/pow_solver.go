@@ -8,20 +8,20 @@ import (
 )
 
 type POWSolver struct {
-	nonceFinder      domain.NonceFinder
-	readWriter       domain.ReadWriter
-	findNonceTimeout time.Duration
+	nonceFinder  domain.NonceFinder
+	readWriter   domain.ReadWriter
+	solveTimeout time.Duration
 }
 
 func NewPOWSolver(
 	nonceFinder domain.NonceFinder,
 	readWriter domain.ReadWriter,
-	findNonceTimeout time.Duration,
+	solveTimeout time.Duration,
 ) *POWSolver {
 	return &POWSolver{
 		nonceFinder,
 		readWriter,
-		findNonceTimeout,
+		solveTimeout,
 	}
 }
 
@@ -31,7 +31,7 @@ func (r *POWSolver) Solve() (domain.Grant, error) {
 		return domain.Grant{}, fmt.Errorf("error reading pow request: %w", err)
 	}
 
-	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), r.findNonceTimeout)
+	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), r.solveTimeout)
 	defer cancel()
 
 	nonce, err := r.nonceFinder.Find(ctxWithTimeout, powRequest.Challenge, powRequest.Difficulty)

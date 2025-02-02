@@ -5,18 +5,12 @@ import (
 	"testing"
 )
 
-func TestRandomQuoteProvider(t *testing.T) {
+func TestWordOfWisdomQuoteProvider(t *testing.T) {
 	t.Run("provide any quote", func(t *testing.T) {
-		quotes := []Quote{
-			"quote 1",
-			"quote 2",
-			"quote 3",
-		}
-
-		sut := NewRandomQuoteProvider(quotes)
+		sut := NewWordOfWisdomQuoteProvider()
 
 		actualQuote := sut.Provide()
 
-		assert.Contains(t, quotes, actualQuote)
+		assert.NotEmpty(t, actualQuote, actualQuote)
 	})
 }

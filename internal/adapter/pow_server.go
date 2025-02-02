@@ -50,7 +50,7 @@ func (r *POWServer) Address() string {
 	return r.listener.Addr().String()
 }
 
-func (r *POWServer) Listen() error {
+func (r *POWServer) Run(ctx context.Context) error {
 	listener, err := net.Listen("tcp", r.address)
 	if err != nil {
 		return fmt.Errorf("failed to start tcp listener on %s: %w", r.address, err)
@@ -58,13 +58,6 @@ func (r *POWServer) Listen() error {
 
 	r.listener = listener
 	r.logger.Debug(fmt.Sprintf("listening on %s", r.address))
-	return nil
-}
-
-func (r *POWServer) Run(ctx context.Context) error {
-	if r.listener == nil {
-		return fmt.Errorf("server is not listening")
-	}
 
 	errCh := make(chan error, 1)
 

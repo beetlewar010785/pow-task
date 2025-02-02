@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"errors"
 	"net"
 	"testing"
 	"time"
@@ -39,8 +40,6 @@ func TestIntegration(t *testing.T) {
 			adapter.NewStdLogger("server", adapter.LogLevelInfo),
 		)
 
-		require.NoError(t, powServer.Listen())
-
 		ctx, cancel := context.WithCancel(context.Background())
 		t.Cleanup(cancel)
 
@@ -49,9 +48,10 @@ func TestIntegration(t *testing.T) {
 			assert.NoError(t, err, "server.Run() returned an unexpected error")
 		}()
 
-		WaitForServer(t, powServer)
+		serverAddress, err := waitForServer(powServer)
+		require.NoError(t, err)
 
-		conn, solver, err := adapter.CreatePOWClient(powServer.Address(), 10*time.Second)
+		conn, solver, err := adapter.CreatePOWClient(serverAddress, 10*time.Second)
 		require.NoError(t, err)
 
 		return testSuite{
@@ -81,7 +81,7 @@ func TestIntegration(t *testing.T) {
 	})
 }
 
-func WaitForServer(t *testing.T, server *adapter.POWServer) {
+func waitForServer(server *adapter.POWServer) (string, error) {
 	timeout := time.After(2 * time.Second)
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
@@ -89,10 +89,11 @@ func WaitForServer(t *testing.T, server *adapter.POWServer) {
 	for {
 		select {
 		case <-timeout:
-			t.Fatal("Server did not start listening in time")
+			return "", errors.New("timed out")
 		case <-ticker.C:
+			serverAddress := server.Address()
 			if server.Address() != "" {
-				return
+				return serverAddress, nil
 			}
 		}
 	}
