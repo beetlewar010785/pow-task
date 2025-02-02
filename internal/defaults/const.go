@@ -8,7 +8,7 @@ import (
 
 const ServerPort = "8080"
 const LogLevel = adapter.LogLevelDebug
-const ChallengeDifficulty = 10
+const ChallengeDifficulty = 4
 const ChallengeLength = 16
 const VerificationTimeout = 10 * time.Second
 

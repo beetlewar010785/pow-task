@@ -17,21 +17,21 @@ func main() {
 	logger := adapter.NewStdLogger("client", defaults.LogLevel)
 	logger.Info(fmt.Sprintf("connecting to %s", serverAddress))
 
-	conn, granReceiver, err := adapter.CreateTCPClient(serverAddress)
+	conn, grantReceiver, err := adapter.CreateTCPClient(serverAddress, defaults.VerificationTimeout)
 	if err != nil {
 		logger.Error(fmt.Sprintf("failed to connect to %s", serverAddress))
 		os.Exit(1)
 	}
 	defer func() { _ = conn.Close() }()
 
-	grant, err := granReceiver.Solve()
+	grant, err := grantReceiver.Solve()
 	if err != nil {
-		logger.Error(fmt.Sprintf("failed to receive grat message: %s", err))
+		logger.Error(fmt.Sprintf("failed to receive grant message: %s", err))
 		os.Exit(1)
 	}
 
 	if grant.Result != domain.GrantResultSuccess {
-		logger.Error(fmt.Sprintf("failed to grant: %d", grant.Result))
+		logger.Error(fmt.Sprintf("grant failed: %d", grant.Result))
 		os.Exit(1)
 	}
 

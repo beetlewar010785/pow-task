@@ -96,6 +96,8 @@ func (r *TCPServer) Run(ctx context.Context) error {
 			err := r.performVerificationWithTimeout(ctx, conn)
 			if err != nil {
 				r.logger.Warn(fmt.Sprintf("challenge failed: %v", err))
+			} else {
+				r.logger.Info(fmt.Sprintf("client verified: %s", conn.RemoteAddr()))
 			}
 		}()
 	}

@@ -51,7 +51,7 @@ func TestIntegration(t *testing.T) {
 
 		WaitForServer(t, tcpServer)
 
-		conn, solver, err := adapter.CreateTCPClient(tcpServer.Address())
+		conn, solver, err := adapter.CreateTCPClient(tcpServer.Address(), 10*time.Second)
 		require.NoError(t, err)
 
 		return testSuite{

@@ -1,8 +1,10 @@
 package domain
 
 import (
+	"context"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -74,7 +76,8 @@ func TestIncrementalNonceFinder(t *testing.T) {
 		challengeVerifier.expectedNonce = 42
 		sut := NewIncrementalNonceFinder(challengeVerifier)
 
-		actualNonce := sut.Find("any", 3)
+		actualNonce, err := sut.Find(context.Background(), "any", 3)
+		require.NoError(t, err)
 
 		assert.Equal(t, challengeVerifier.expectedNonce, actualNonce)
 	})
