@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/beetlewar010785/pow-task/internal/domain"
 )
@@ -56,7 +57,8 @@ func readDataAndLog[T any](
 	logger.Trace(fmt.Sprintf("%s reading", dataName))
 	result, err := action()
 	if err == nil {
-		logger.Trace(fmt.Sprintf("%s read succeeded: %+v", dataName, result))
+		j, _ := json.MarshalIndent(result, "", "  ")
+		logger.Trace(fmt.Sprintf("%s read succeeded: %s", dataName, j))
 	}
 	return result, err
 }
@@ -67,7 +69,8 @@ func writeDataAndLog[T any](
 	dataName string,
 	action func(T) error,
 ) error {
-	logger.Trace(fmt.Sprintf("%s writing: %+v", dataName, data))
+	j, _ := json.MarshalIndent(data, "", "  ")
+	logger.Trace(fmt.Sprintf("%s writing: %s", dataName, j))
 	err := action(data)
 	if err == nil {
 		logger.Trace(fmt.Sprintf("%s write succeeded", dataName))
