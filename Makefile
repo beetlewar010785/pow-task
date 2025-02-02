@@ -6,7 +6,7 @@ lint:
 	@golangci-lint run --timeout=1m
 
 test:
-	@go test -v ./...
+	@go test ./...
 
 build-server:
 	docker build -f ./docker/server.Dockerfile -t $(SERVER_IMAGE) .

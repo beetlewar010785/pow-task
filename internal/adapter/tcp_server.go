@@ -7,14 +7,16 @@ import (
 	"github.com/beetlewar010785/pow-task/internal/domain"
 	"net"
 	"sync"
+	"time"
 )
 
 type TCPServer struct {
-	address         string
-	logger          domain.Logger
-	listener        net.Listener
-	connections     sync.Map
-	verifierFactory application.VerifierFactory
+	address             string
+	logger              domain.Logger
+	listener            net.Listener
+	connections         sync.Map
+	verifierFactory     application.VerifierFactory
+	verificationTimeout time.Duration
 }
 
 func StartTCPServer(
@@ -22,6 +24,7 @@ func StartTCPServer(
 	grantProvider domain.QuoteProvider,
 	challengeDifficulty domain.Difficulty,
 	challengeLength int,
+	verificationTimeout time.Duration,
 	logger domain.Logger,
 ) *TCPServer {
 	challengeRandomizer := domain.NewSimpleChallengeRandomizer(challengeLength)
@@ -33,9 +36,10 @@ func StartTCPServer(
 		challengeDifficulty,
 	)
 	return &TCPServer{
-		logger:          logger,
-		verifierFactory: verifierFactory,
-		address:         serverAddress,
+		logger:              logger,
+		verifierFactory:     verifierFactory,
+		address:             serverAddress,
+		verificationTimeout: verificationTimeout,
 	}
 }
 
@@ -86,19 +90,40 @@ func (r *TCPServer) Run(ctx context.Context) error {
 		r.logger.Info(fmt.Sprintf("client connected: %s", conn.RemoteAddr()))
 
 		r.connections.Store(conn, conn)
-		go r.performChallenge(conn)
+		go func() {
+			defer r.closeConnection(conn)
+
+			err := r.performVerificationWithTimeout(ctx, conn)
+			if err != nil {
+				r.logger.Warn(fmt.Sprintf("challenge failed: %v", err))
+			} else {
+				r.logger.Info(fmt.Sprintf("client verified: %s", conn.RemoteAddr()))
+			}
+		}()
 	}
 }
 
-func (r *TCPServer) performChallenge(conn net.Conn) {
-	defer r.closeConnection(conn)
+func (r *TCPServer) performVerificationWithTimeout(ctx context.Context, conn net.Conn) error {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, r.verificationTimeout)
+	defer cancel()
 
-	readWriter := NewStringReadWriter(conn)
-	verifier := r.verifierFactory.Create(readWriter)
-	if err := verifier.Verify(); err != nil {
-		r.logger.Warn(fmt.Sprintf("challenge for %s failed: %v", conn.RemoteAddr(), err))
-	} else {
-		r.logger.Debug(fmt.Sprintf("challenge for %s succeeded", conn.RemoteAddr()))
+	return r.performVerification(ctxWithTimeout, conn)
+}
+
+func (r *TCPServer) performVerification(ctx context.Context, conn net.Conn) error {
+	done := make(chan error, 1)
+
+	go func() {
+		readWriter := NewStringReadWriter(conn)
+		verifier := r.verifierFactory.Create(readWriter)
+		done <- verifier.Verify()
+	}()
+
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("verification timed out or canceled: %w", ctx.Err())
+	case err := <-done:
+		return err
 	}
 }
 

@@ -1,8 +1,10 @@
 package domain
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -22,7 +24,7 @@ type ChallengeVerifier interface {
 }
 
 type NonceFinder interface {
-	Find(challenge Challenge, difficulty Difficulty) Nonce
+	Find(ctx context.Context, challenge Challenge, difficulty Difficulty) (Nonce, error)
 }
 
 type SimpleChallengeRandomizer struct {
@@ -69,18 +71,23 @@ type IncrementalNonceFinder struct {
 	challengeVerifier ChallengeVerifier
 }
 
-func NewIncrementalNonceFinder(challengeVerifier ChallengeVerifier) NonceFinder {
+func NewIncrementalNonceFinder(challengeVerifier ChallengeVerifier) *IncrementalNonceFinder {
 	return &IncrementalNonceFinder{
 		challengeVerifier,
 	}
 }
 
-func (r *IncrementalNonceFinder) Find(challenge Challenge, difficulty Difficulty) Nonce {
+func (r *IncrementalNonceFinder) Find(ctx context.Context, challenge Challenge, difficulty Difficulty) (Nonce, error) {
 	var nonce Nonce
 	for {
-		if r.challengeVerifier.Verify(challenge, nonce, difficulty) {
-			return nonce
+		select {
+		case <-ctx.Done():
+			return 0, fmt.Errorf("nonce search timed out: %w", ctx.Err())
+		default:
+			if r.challengeVerifier.Verify(challenge, nonce, difficulty) {
+				return nonce, nil
+			}
+			nonce++
 		}
-		nonce++
 	}
 }

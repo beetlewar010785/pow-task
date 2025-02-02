@@ -1,10 +1,13 @@
 package application
 
 import (
+	"context"
+	"errors"
 	"github.com/beetlewar010785/pow-task/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 func TestPOWSolver(t *testing.T) {
@@ -21,7 +24,7 @@ func TestPOWSolver(t *testing.T) {
 		readWriter.POWRequest = domain.NewPOWRequest(challenge, difficulty)
 		readWriter.Grant = grant
 
-		sut := NewPOWSolver(nonceFinder, readWriter)
+		sut := NewPOWSolver(nonceFinder, readWriter, 10*time.Second)
 
 		actualGrant, err := sut.Solve()
 		require.NoError(t, err)
@@ -48,12 +51,13 @@ func (r *nonceFinderMock) withNonce(
 }
 
 func (r *nonceFinderMock) Find(
+	_ context.Context,
 	challenge domain.Challenge,
 	difficulty domain.Difficulty,
-) domain.Nonce {
+) (domain.Nonce, error) {
 	if r.expectedChallenge == challenge && r.expectedDifficulty == difficulty {
-		return r.nonceToFind
+		return r.nonceToFind, nil
 	}
 
-	return 0
+	return 0, errors.New("not found")
 }
