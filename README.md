@@ -114,7 +114,6 @@ go run ./cmd/client/main.go
 ⚠️ **Potential improvements and known issues:**
 - 📝 **StringReadWriter serializer** ([./internal/adapter/string_read_writer.go](./internal/adapter/string_read_writer.go)) is **not optimized** and may require performance improvements.
 - ❌ **Large portions of negative test scenarios** are **not covered**, including timeout handling for PoW verification.
-- 🔄 **Server-client integration** when running inside **Docker** has **not been thoroughly tested**.
 
 ---
 
