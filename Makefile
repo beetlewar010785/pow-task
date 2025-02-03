@@ -21,7 +21,7 @@ run-server: network
 	docker run --rm -d --name server --network $(NETWORK) -p 8080:8080 -e LOG_LEVEL=4 $(SERVER_IMAGE)
 
 run-client: network
-	docker run --rm --name client --network $(NETWORK) -e SERVER_ADDRESS="server:8080" -e LOG_LEVEL=4 $(CLIENT_IMAGE)
+	docker run --rm --network $(NETWORK) -e SERVER_ADDRESS="server:8080" -e LOG_LEVEL=4 $(CLIENT_IMAGE)
 
 clean-docker:
 	docker ps -q --filter "name=server" | xargs -r docker stop
