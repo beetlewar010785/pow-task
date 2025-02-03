@@ -15,7 +15,7 @@ build-client:
 	docker build -f ./docker/client.Dockerfile -t $(CLIENT_IMAGE) .
 
 network:
-	docker network create $(NETWORK) || true
+	docker network ls | grep -wq $(NETWORK) || docker network create $(NETWORK)
 
 run-server: network
 	docker run --rm -d --name server --network $(NETWORK) -p 8080:8080 -e LOG_LEVEL=4 $(SERVER_IMAGE)
