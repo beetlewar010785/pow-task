@@ -119,9 +119,10 @@ go run ./cmd/client/main.go
 ---
 
 ## 📌 Areas for Improvement
-⚠️ **Potential improvements and known issues:**
-- 📝 **StringReadWriter serializer** ([./internal/adapter/string_read_writer.go](./internal/adapter/string_read_writer.go)) is **not optimized** and may require performance improvements.
-- ❌ **Large portions of negative test scenarios** are **not covered**, including timeout handling for PoW verification.
+🚀 **Potential Improvements and Known Issues:**
+- ⚡ **StringReadWriter Serializer** ([./internal/adapter/string_read_writer.go](./internal/adapter/string_read_writer.go)) is **not optimized** and may require performance improvements.
+- 🔴 **Large Portions of Negative Test Scenarios** are **not covered**, including timeout handling for PoW verification.
+- 📜 **Improve Logging**. Move out of domain and use something popular.
 
 ---
 
