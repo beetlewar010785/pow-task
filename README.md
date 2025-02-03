@@ -65,11 +65,19 @@ make test
 ```
 🛠️ Executes the test suite.
 
-### 🧪 Running Integration Tests
+### 🥾 Running Integration Tests
 ```sh
-./integration-test.sh
+./integration-test.sh [N]
 ```
-🛠️ Executes the integration test suite (server and client docker images must be built).
+🛠️ Executes the integration test suite (server and client docker images must be built).  
+🔹 **N** - (optional) number of clients to run in parallel (default is `10`).
+
+#### **Examples:**
+```sh
+./integration-test.sh      # Runs with 10 clients (default)
+./integration-test.sh 5    # Runs with 5 clients
+./integration-test.sh 20   # Runs with 20 clients
+```
 
 ### 📦 Building Docker Images
 ```sh
@@ -111,9 +119,10 @@ go run ./cmd/client/main.go
 ---
 
 ## 📌 Areas for Improvement
-⚠️ **Potential improvements and known issues:**
-- 📝 **StringReadWriter serializer** ([./internal/adapter/string_read_writer.go](./internal/adapter/string_read_writer.go)) is **not optimized** and may require performance improvements.
-- ❌ **Large portions of negative test scenarios** are **not covered**, including timeout handling for PoW verification.
+🚀 **Potential Improvements and Known Issues:**
+- ⚡ **StringReadWriter Serializer** ([./internal/adapter/string_read_writer.go](./internal/adapter/string_read_writer.go)) is **not optimized** and may require performance improvements.
+- 🔴 **Large Portions of Negative Test Scenarios** are **not covered**, including timeout handling for PoW verification.
+- 📜 **Improve Logging**. Move out of domain and use something popular.
 
 ---
 
